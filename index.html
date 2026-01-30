@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Frank Force | KilledByAPixel</title>
+  <meta name="description" content="Game developer and generative artist in Austin, TX. Creator of LittleJS and ZzFX. 1,000+ tiny JavaScript demos and award-winning optical illusion work." />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Frank Force | KilledByAPixel" />
+  <meta property="og:description" content="Game developer and generative artist. Creator of LittleJS and ZzFX. 1,000+ tiny JS demos." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://killedbyapixel.github.io/" />
+
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel:#10151b;
+      --text:#e8eef6;
+      --muted:#aab7c6;
+      --line:rgba(232,238,246,.12);
+      --link:#86b7ff;
+      --chip:rgba(134,183,255,.14);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+      --max: 980px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#fbfcfe;
+        --panel:#ffffff;
+        --text:#0f172a;
+        --muted:#475569;
+        --line:rgba(15,23,42,.10);
+        --link:#1d4ed8;
+        --chip:rgba(29,78,216,.10);
+        --shadow: 0 10px 30px rgba(15,23,42,.10);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(134,183,255,.18), transparent 55%),
+                  radial-gradient(1000px 600px at 90% 10%, rgba(120,255,214,.12), transparent 50%),
+                  var(--bg);
+      color:var(--text);
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:var(--max); margin:0 auto; padding:28px 18px 44px}
+    header{padding:18px 0 10px}
+    .hero{
+      display:flex; gap:18px; align-items:flex-start; justify-content:space-between;
+      padding:20px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .title{margin:0; font-size:30px; letter-spacing:.2px}
+    .subtitle{margin:6px 0 0; color:var(--muted)}
+    .chips{margin-top:12px; display:flex; flex-wrap:wrap; gap:8px}
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px; border:1px solid var(--line);
+      background:var(--chip); color:var(--text); font-size:13px;
+    }
+    .links{display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px; border-radius:10px; border:1px solid var(--line);
+      background:transparent; color:var(--text);
+      text-decoration:none;
+    }
+    .btn:hover{background:rgba(232,238,246,.06); text-decoration:none}
+    .section{margin-top:22px}
+    .section h2{margin:0 0 10px; font-size:18px; letter-spacing:.2px}
+    .panel{
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+      padding:18px; box-shadow:var(--shadow);
+    }
+    .grid{
+      display:grid; gap:12px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .card{
+      grid-column: span 6;
+      padding:14px; border:1px solid var(--line); border-radius:12px;
+      background: rgba(255,255,255,.02);
+    }
+    .card h3{margin:0 0 6px; font-size:16px}
+    .card p{margin:0 0 10px; color:var(--muted)}
+    .card .meta{display:flex; flex-wrap:wrap; gap:8px}
+    .meta a{font-size:14px}
+    .small{color:var(--muted); font-size:14px}
+    footer{
+      margin-top:24px; padding-top:14px; color:var(--muted);
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
+      border-top:1px solid var(--line);
+    }
+    @media (max-width: 760px){
+      .hero{flex-direction:column}
+      .links{justify-content:flex-start}
+      .card{grid-column: span 12}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="hero">
+        <div>
+          <h1 class="title">Frank Force</h1>
+          <p class="subtitle">
+            Game developer and generative artist in Austin, Texas. Creator of LittleJS and ZzFX.
+          </p>
+
+          <div class="chips" aria-label="Highlights">
+            <span class="chip">30+ years in games</span>
+            <span class="chip">Open source tools</span>
+            <span class="chip">1,000+ tiny JS demos</span>
+            <span class="chip">Optical Illusion of the Year (2019)</span>
+          </div>
+        </div>
+
+        <nav class="links" aria-label="Links">
+          <a class="btn" href="https://github.com/KilledByAPixel" rel="me">GitHub</a>
+          <a class="btn" href="https://killedbyapixel.github.io/LittleJS/examples/">LittleJS Demos</a>
+          <a class="btn" href="https://killedbyapixel.github.io/ZzFX/">ZzFX Editor</a>
+          <a class="btn" href="https://frankforce.com/">FrankForce.com</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>About</h2>
+      <div class="panel">
+        <p>
+          I’m a game developer and artist based in Austin, Texas, with 30+ years of experience making games.
+          I’ve worked at studios including Rooster Teeth, Certain Affinity, Volition, and Midway Games, and I’ve released a large catalog of indie games and creative tools.
+          I’m best known for the open source LittleJS game engine and the ZzFX sound effect generator.
+        </p>
+        <p class="small">
+          I also do JavaScript size coding (complete games and programs in tiny amounts of code) and have published 1,000+ tiny JS demos.
+          In 2019, “The Dual Axis Illusion” won Optical Illusion of the Year.
+          Off the keyboard: cooking, gardening, Italian, guitar, and home projects (plus my wife and our cat).
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Featured Projects</h2>
+      <div class="panel">
+        <div class="grid">
+          <article class="card">
+            <h3>LittleJS Engine</h3>
+            <p>Tiny, fast open source HTML5 game engine.</p>
+            <div class="meta">
+              <a href="https://github.com/KilledByAPixel/LittleJS">Repo</a>
+              <a href="https://killedbyapixel.github.io/LittleJS/examples/">Demos</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>ZzFX Sound Effect Generator</h3>
+            <p>Open source JavaScript sound FX system and editor.</p>
+            <div class="meta">
+              <a href="https://github.com/KilledByAPixel/ZzFX">Repo</a>
+              <a href="https://killedbyapixel.github.io/ZzFX/">Editor</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Tiny Code Experiments</h3>
+            <p>Programs with very small source code.</p>
+            <div class="meta">
+              <a href="https://github.com/KilledByAPixel/TinyCode">Repo</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Featured Games</h2>
+      <div class="panel">
+        <div class="grid">
+          <article class="card">
+            <h3>Driven Wild</h3>
+            <p>Procedural arcade driving game.</p>
+            <div class="meta">
+              <a href="https://www.newgrounds.com/portal/view/972740">Play</a>
+              <a href="https://github.com/KilledByAPixel/Drive13K">Source</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Space Huggers</h3>
+            <p>Run-and-gun platformer roguelike.</p>
+            <div class="meta">
+              <a href="https://www.newgrounds.com/portal/view/819609">Play</a>
+              <a href="https://github.com/KilledByAPixel/SpaceHuggers">Source</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>L1TTLE PAWS</h3>
+            <p>Physics-based cat sliding game.</p>
+            <div class="meta">
+              <a href="https://killedbyapixel.itch.io/l1ttl3-paws">Play</a>
+              <a href="https://github.com/KilledByAPixel/JS13K2025">Source</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Bounce Back</h3>
+            <p>Retro boomerang roguelite adventure.</p>
+            <div class="meta">
+              <a href="https://frankforce.com/bounce-back-postmortem/">Postmortem</a>
+              <a href="https://github.com/KilledByAPixel/BounceBack">Source</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Bogus Roads</h3>
+            <p>Lowrez retrowave racing.</p>
+            <div class="meta">
+              <a href="https://www.newgrounds.com/portal/view/747570">Play</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Undergrowth: A Tale From O Monolith</h3>
+            <p>Promo game for the band Squid.</p>
+            <div class="meta">
+              <a href="https://undergrowth.squidband.uk/">Site</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© <span id="y"></span> Frank Force</div>
+      <div class="small">
+        <a href="https://github.com/KilledByAPixel">GitHub</a> ·
+        <a href="https://killedbyapixel.github.io/">killedbyapixel.github.io</a> ·
+        <a href="https://frankforce.com/">frankforce.com</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

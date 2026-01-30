@@ -53,9 +53,15 @@
     .wrap{max-width:var(--max); margin:0 auto; padding:28px 18px 44px}
     header{padding:18px 0 10px}
     .hero{
-      display:flex; gap:18px; align-items:flex-start; justify-content:space-between;
+      display:flex; gap:18px; flex-direction:column;
       padding:20px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
       box-shadow:var(--shadow);
+    }
+    .hero-top{display:flex; gap:18px; justify-content:space-between; align-items:flex-start}
+    .hero-content{display:flex; gap:18px; align-items:flex-start}
+    .avatar{
+      width:100px; height:100px; border-radius:50%;
+      border:2px solid var(--line); flex-shrink:0; object-fit:cover;
     }
     .title{margin:0; font-size:30px; letter-spacing:.2px}
     .subtitle{margin:6px 0 0; color:var(--muted)}
@@ -108,16 +114,35 @@
       width:100%; aspect-ratio:16/9; border:none; border-radius:8px;
       margin-bottom:10px; display:block;
     }
+    .gallery{
+      display:grid; gap:12px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    .gallery-item{
+      aspect-ratio:1; overflow:hidden; border-radius:12px;
+      border:1px solid var(--line); cursor:pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .gallery-item:hover{
+      transform:scale(1.03); box-shadow:var(--shadow);
+    }
+    .gallery-item img{
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
     footer{
       margin-top:24px; padding-top:14px; color:var(--muted);
       display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
       border-top:1px solid var(--line);
     }
     @media (max-width: 760px){
-      .hero{flex-direction:column}
-      .links{justify-content:flex-start}
+      .hero-top{flex-direction:column}
+      .hero-content{flex-direction:column; align-items:center; text-align:center}
+      .avatar{width:80px; height:80px}
+      .chips{justify-content:center}
+      .links{justify-content:center}
       .card{grid-column: span 12}
       .video-card{grid-column: span 12}
+      .gallery{grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))}
     }
   </style>
 </head>
@@ -126,31 +151,36 @@
   <div class="wrap">
     <header>
       <div class="hero">
-        <div>
-          <h1 class="title">Frank Force</h1>
-          <p class="subtitle">
-            Game developer and generative artist in Austin, Texas. Creator of LittleJS, ZzFX, and games industry veteran.
-          </p>
-
-          <div class="chips" aria-label="Highlights">
-            <span class="chip">30+ years in games</span>
-            <span class="chip">Open source expert</span>
-            <span class="chip">1,000+ tiny JS demos</span>
-            <span class="chip">10+ live talks</span>
-            <span class="chip">Optical Illusion of the Year 2019</span>
+        <div class="hero-top">
+          <div class="hero-content">
+            <img src="images/profile.jpg" alt="Frank Force" class="avatar">
+            <div>
+              <h1 class="title">Frank Force</h1>
+              <p class="subtitle">
+                Game developer and generative artist in Austin, Texas. Creator of LittleJS, ZzFX, and games industry veteran.
+              </p>
+            </div>
           </div>
+
+          <nav class="links" aria-label="Links">
+            <a class="btn" href="https://github.com/KilledByAPixel">GitHub</a>
+            <a class="btn" href="https://frankforce.com/">Blog</a>
+            <a class="btn" href="https://bsky.app/profile/frankforce.bsky.social">Bluesky</a>
+            <a class="btn" href="https://twitter.com/KilledByAPixel">Twitter</a>
+            <a class="btn" href="https://www.dwitter.net/u/KilledByAPixel">Dwitter</a>
+            <a class="btn" href="https://www.fxhash.xyz/u/KilledByAPixel">fxhash</a>
+            <a class="btn" href="https://killedbyapixel.itch.io/">Itch.io</a>
+            <a class="btn" href="https://killedbyapixel.newgrounds.com/games">Newgrounds</a>
+          </nav>
         </div>
 
-        <nav class="links" aria-label="Links">
-          <a class="btn" href="https://github.com/KilledByAPixel">GitHub</a>
-          <a class="btn" href="https://frankforce.com/">Blog</a>
-          <a class="btn" href="https://bsky.app/profile/frankforce.bsky.social">Bluesky</a>
-          <a class="btn" href="https://twitter.com/KilledByAPixel">Twitter</a>
-          <a class="btn" href="https://www.dwitter.net/u/KilledByAPixel">Dwitter</a>
-          <a class="btn" href="https://www.fxhash.xyz/u/KilledByAPixel">fxhash</a>
-          <a class="btn" href="https://killedbyapixel.itch.io/">Itch.io</a>
-          <a class="btn" href="https://killedbyapixel.newgrounds.com/games">Newgrounds</a>
-        </nav>
+        <div class="chips" aria-label="Highlights">
+          <span class="chip">30+ years in games</span>
+          <span class="chip">Open source expert</span>
+          <span class="chip">1,000+ tiny JS demos</span>
+          <span class="chip">10+ live talks</span>
+          <span class="chip">Optical Illusion of the Year 2019</span>
+        </div>
       </div>
     </header>
 
@@ -284,6 +314,44 @@
     </section>
 
     <section class="section">
+      <h2>Generative Art</h2>
+      <div class="panel">
+        <div class="gallery">
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/AstronomicComics.jpg" alt="Astronomic Comics">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/AutoPark.jpg" alt="Auto Park">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/BrokenFlows.jpg" alt="Broken Flows">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/DitheredBranches.jpg" alt="Dithered Branches">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/DividByCircle.jpg" alt="Divid By Circle">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/RadImpressions.jpg" alt="Rad Impressions">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/Roil.jpg" alt="Roil">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/Tilemoji.jpg" alt="Tilemoji">
+          </a>
+          <a class="gallery-item" href="https://www.fxhash.xyz/u/KilledByAPixel">
+            <img src="art/TreeSky.jpg" alt="Tree Sky">
+          </a>
+        </div>
+        <p class="small" style="margin-top:14px; margin-bottom:0">
+          <a href="https://www.fxhash.xyz/u/KilledByAPixel">View all on fxhash →</a>
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
       <h2>Videos</h2>
       <div class="panel">
         <div class="grid">
@@ -304,7 +372,7 @@
             <h3>Dual Axis Illusion</h3>
             <p>Best Illusion of the Year Contest - 2019</p>
           </article>
-          
+
           <article class="video-card">
             <iframe src="https://www.youtube.com/embed/m9VMf790ld8" allowfullscreen></iframe>
             <h3>Piroot Game Trailer</h3>

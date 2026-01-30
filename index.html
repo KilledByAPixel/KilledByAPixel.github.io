@@ -88,11 +88,26 @@
       padding:14px; border:1px solid var(--line); border-radius:12px;
       background: rgba(255,255,255,.02);
     }
+    .card img{
+      width:100%; border-radius:8px;
+      margin-bottom:10px; display:block;
+    }
     .card h3{margin:0 0 6px; font-size:16px}
     .card p{margin:0 0 10px; color:var(--muted)}
     .card .meta{display:flex; flex-wrap:wrap; gap:8px}
     .meta a{font-size:14px}
     .small{color:var(--muted); font-size:14px}
+    .video-card{
+      grid-column: span 6;
+      padding:14px; border:1px solid var(--line); border-radius:12px;
+      background: rgba(255,255,255,.02);
+    }
+    .video-card h3{margin:0 0 6px; font-size:16px}
+    .video-card p{margin:0 0 10px; color:var(--muted)}
+    .video-card iframe{
+      width:100%; aspect-ratio:16/9; border:none; border-radius:8px;
+      margin-bottom:10px; display:block;
+    }
     footer{
       margin-top:24px; padding-top:14px; color:var(--muted);
       display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
@@ -102,6 +117,7 @@
       .hero{flex-direction:column}
       .links{justify-content:flex-start}
       .card{grid-column: span 12}
+      .video-card{grid-column: span 12}
     }
   </style>
 </head>
@@ -113,14 +129,15 @@
         <div>
           <h1 class="title">Frank Force</h1>
           <p class="subtitle">
-            Game developer and generative artist in Austin, Texas. Creator of LittleJS and ZzFX.
+            Game developer and generative artist in Austin, Texas. Creator of LittleJS, ZzFX, and games industry veteran.
           </p>
 
           <div class="chips" aria-label="Highlights">
             <span class="chip">30+ years in games</span>
-            <span class="chip">Open source tools</span>
+            <span class="chip">Open source expert</span>
             <span class="chip">1,000+ tiny JS demos</span>
-            <span class="chip">Optical Illusion of the Year (2019)</span>
+            <span class="chip">10+ live talks</span>
+            <span class="chip">Optical Illusion of the Year 2019</span>
           </div>
         </div>
 
@@ -154,6 +171,7 @@
       <div class="panel">
         <div class="grid">
           <article class="card">
+            <img src="images/LittleJSExamples.jpg" alt="LittleJS Engine">
             <h3>LittleJS Engine</h3>
             <p>Tiny, fast open source HTML5 game engine.</p>
             <div class="meta">
@@ -163,6 +181,7 @@
           </article>
 
           <article class="card">
+            <img src="images/ZzFX.jpg" alt="ZzFX Sound Effect Generator">
             <h3>ZzFX Sound Effect Generator</h3>
             <p>Open source JavaScript sound FX system and editor.</p>
             <div class="meta">
@@ -196,6 +215,7 @@
       <div class="panel">
         <div class="grid">
           <article class="card">
+            <img src="images/DrivenWild.png" alt="Driven Wild">
             <h3>Driven Wild</h3>
             <p>Procedural arcade driving game.</p>
             <div class="meta">
@@ -205,15 +225,18 @@
           </article>
 
           <article class="card">
+            <img src="images/SpaceHuggers.png" alt="Space Huggers">
             <h3>Space Huggers</h3>
             <p>Run-and-gun platformer roguelike.</p>
             <div class="meta">
               <a href="https://www.newgrounds.com/portal/view/819609">Play</a>
+              <a href="https://frankforce.com/space-huggers-how-i-made-a-game-in-13-kilobytes/">Postmortem</a>
               <a href="https://github.com/KilledByAPixel/SpaceHuggers">Source</a>
             </div>
           </article>
 
           <article class="card">
+            <img src="images/LittlePaws.png" alt="L1TTLE PAWS">
             <h3>L1TTLE PAWS</h3>
             <p>Physics-based cat sliding game.</p>
             <div class="meta">
@@ -223,15 +246,18 @@
           </article>
 
           <article class="card">
+            <img src="images/BounceBack.png" alt="Bounce Back">
             <h3>Bounce Back</h3>
             <p>Retro boomerang roguelite adventure.</p>
             <div class="meta">
+              <a href="https://www.newgrounds.com/portal/view/755171">Play</a>
               <a href="https://frankforce.com/bounce-back-postmortem/">Postmortem</a>
               <a href="https://github.com/KilledByAPixel/BounceBack">Source</a>
             </div>
           </article>
 
           <article class="card">
+            <img src="images/BogusRoads.png" alt="Bogus Roads">
             <h3>Bogus Roads</h3>
             <p>Lowrez retrowave racing.</p>
             <div class="meta">
@@ -240,11 +266,32 @@
           </article>
 
           <article class="card">
+            <img src="images/Undergrowth.jpg" alt="Undergrowth">
             <h3>Undergrowth: A Tale From O Monolith</h3>
             <p>Promo game for the band Squid.</p>
             <div class="meta">
-              <a href="https://undergrowth.squidband.uk/">Site</a>
+              <a href="https://undergrowth.squidband.uk/">Play</a>
+              <a href="https://youtu.be/U2V1L11j_cs?si=WxPllEg1gFd2K1Vt">Promo Video</a>
             </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Talks</h2>
+      <div class="panel">
+        <div class="grid">
+          <article class="video-card">
+            <iframe src="https://www.youtube.com/embed/CagnRwPkw_M" allowfullscreen></iframe>
+            <h3>JavaScript Haikus</h3>
+            <p>2024 – Live at Nerd Nite Austin</p>
+          </article>
+
+          <article class="video-card">
+            <iframe src="https://www.youtube.com/embed/_dXKU0WgAj8" allowfullscreen></iframe>
+            <h3>Making Awesome Games with LittleJS</h3>
+            <p>2022 – JS GameDev Summit</p>
           </article>
         </div>
       </div>

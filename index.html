@@ -39,13 +39,19 @@
       }
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html{height:100%}
     body{
-      margin:0;
+      margin:0; min-height:100%;
       font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background: radial-gradient(1200px 700px at 20% -10%, rgba(134,183,255,.18), transparent 55%),
-                  radial-gradient(1000px 600px at 90% 10%, rgba(120,255,214,.12), transparent 50%),
-                  var(--bg);
+      background: 
+        radial-gradient(ellipse 1200px 700px at 20% 100px, rgba(134,183,255,.18), transparent 60%),
+        radial-gradient(ellipse 1000px 600px at 85% 300px, rgba(120,255,214,.12), transparent 55%),
+        radial-gradient(ellipse 800px 500px at 10% 900px, rgba(180,120,255,.10), transparent 50%),
+        radial-gradient(ellipse 900px 550px at 90% 1400px, rgba(255,180,120,.08), transparent 50%),
+        radial-gradient(ellipse 1100px 650px at 25% 2000px, rgba(120,200,255,.10), transparent 55%),
+        radial-gradient(ellipse 850px 500px at 80% 2600px, rgba(150,255,180,.08), transparent 50%),
+        var(--bg);
+      background-attachment: fixed;
       color:var(--text);
     }
     a{color:var(--link); text-decoration:none}

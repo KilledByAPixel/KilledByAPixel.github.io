@@ -71,12 +71,6 @@
     }
     .title{margin:0; font-size:30px; letter-spacing:.2px}
     .subtitle{margin:6px 0 0; color:var(--muted)}
-    .chips{margin-top:12px; display:flex; flex-wrap:wrap; gap:8px}
-    .chip{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px; border-radius:999px; border:1px solid var(--line);
-      background:var(--chip); color:var(--text); font-size:13px;
-    }
     .links{display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end}
     .btn{
       display:inline-flex; align-items:center; gap:8px;
@@ -154,7 +148,6 @@
       .hero-top{flex-direction:column}
       .hero-content{flex-direction:column; align-items:center; text-align:center}
       .avatar{width:80px; height:80px}
-      .chips{justify-content:center}
       .links{justify-content:center}
       .card{grid-column: span 12}
       .video-card{grid-column: span 12}
@@ -173,7 +166,7 @@
             <div>
               <h1 class="title">Frank Force</h1>
               <p class="subtitle">
-                Game developer and generative artist in Austin, Texas. Creator of LittleJS, ZzFX, and games industry veteran.
+                Game developer and generative artist in Austin, Texas. Creator of LittleJS, ZzFX, and optical illusion winner.
               </p>
             </div>
           </div>
@@ -183,19 +176,9 @@
             <a class="btn" href="https://frankforce.com/">Blog</a>
             <a class="btn" href="https://bsky.app/profile/frankforce.bsky.social">Bluesky</a>
             <a class="btn" href="https://twitter.com/KilledByAPixel">Twitter</a>
-            <a class="btn" href="https://www.dwitter.net/u/KilledByAPixel">Dwitter</a>
-            <a class="btn" href="https://www.fxhash.xyz/u/KilledByAPixel">fxhash</a>
             <a class="btn" href="https://killedbyapixel.itch.io/">Itch.io</a>
             <a class="btn" href="https://killedbyapixel.newgrounds.com/games">Newgrounds</a>
           </nav>
-        </div>
-
-        <div class="chips" aria-label="Highlights">
-          <span class="chip">30+ years in games</span>
-          <span class="chip">Open source expert</span>
-          <span class="chip">1,000+ tiny JS demos</span>
-          <span class="chip">10+ live talks</span>
-          <span class="chip">Optical Illusion of the Year 2019</span>
         </div>
       </div>
     </header>
@@ -207,7 +190,7 @@
           Hi, I'm Frank Force. I've been making videogames for over 30 years. I helped create many successful games and a few very unsuccessful ones. I have held key roles at Certain Affinity, Rooster Teeth, Midway Games, Volition, and several other game studios.
         </p>
         <p>
-          Over the years I also released a wide variety of small games and tools to practice my craft and experiment with new ideas. I am also known for winning optical illusion of the year award by creating The Dual Axis Illusion. As a hobby I have enjoyed writing over 1000 super tiny programs that do all sorts of cool stuff.
+          Over that time I also released a wide variety of games and tools to practice my craft and experiment with new ideas. I am also known for winning theOptical Illusion of the Year award by creating The Dual Axis Illusion. As a hobby I have enjoyed writing over 1000 super tiny programs that do all sorts of cool stuff.
         </p>
         <p class="small">
           My company, Frank Force Games is located in Austin, Texas. We specialize in entertainment software development including games, art, tools, promotional software, and educational resources.
@@ -226,8 +209,7 @@
             <div class="meta">
               <a href="https://github.com/KilledByAPixel/LittleJS">Repo</a>
               <a href="https://killedbyapixel.github.io/LittleJS/examples/">Demos</a>
-              <a href="https://chatgpt.com/g/g-67c7c080b5bc81919736bc8815836be6-littlejs-game-maker">LittleJS GPT</a>
-              <a href="https://github.com/KilledByAPixel/LittleJS-AI">AI Tools</a>
+              <a href="https://github.com/KilledByAPixel/LittleJS-AI">AI Experiments</a>
             </div>
           </article>
 
@@ -238,23 +220,29 @@
             <div class="meta">
               <a href="https://github.com/KilledByAPixel/ZzFX">Repo</a>
               <a href="https://killedbyapixel.github.io/ZzFX/">Editor</a>
+              <a href="https://codepen.io/KilledByAPixel/full/BaowKzv">Demo</a>
             </div>
           </article>
 
           <article class="card">
+            <img src="images/Dweets.jpg" alt="Tiny JavaScript Demos">
             <h3>Tiny Code Experiments</h3>
             <p>Programs with very small source code.</p>
             <div class="meta">
               <a href="https://github.com/KilledByAPixel/TinyCode">Repo</a>
+              <a href="https://www.dwitter.net/u/KilledByAPixel/top">Dweets</a>
+              <a href="https://www.pouet.net/user.php?who=102368">Pouet</a>
             </div>
           </article>
 
           <article class="card">
-            <h3>JSONCrush</h3>
-            <p>Compress JSON into URL friendly strings.</p>
+            <img src="images/ZzArt.jpg" alt="ZzArt Generative Art">
+            <h3>ZzArt - Abstract Art Evolution</h3>
+            <p>Generate abstract art by evolving GLSL shaders.</p>
             <div class="meta">
-              <a href="https://github.com/KilledByAPixel/JSONCrush">Repo</a>
-              <a href="https://killedbyapixel.github.io/JSONCrush/">Demo</a>
+              <a href="https://github.com/KilledByAPixel/ZzArt">Repo</a>
+              <a href="https://zzart.3d2k.com/">Demo</a>
+              <a href="https://imgur.com/gallery/100-best-zzart-abstracts-pieces-zQXQcAP">Gallery</a>
             </div>
           </article>
         </div>
@@ -268,7 +256,7 @@
           <article class="card">
             <img src="images/DrivenWild.png" alt="Driven Wild">
             <h3>Driven Wild</h3>
-            <p>Procedural arcade driving game.</p>
+            <p>Procedural arcade driving.</p>
             <div class="meta">
               <a href="https://www.newgrounds.com/portal/view/972740">Play</a>
               <a href="https://github.com/KilledByAPixel/Drive13K">Source</a>

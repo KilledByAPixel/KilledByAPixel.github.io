@@ -66,7 +66,7 @@
     .hero-top{display:flex; gap:18px; justify-content:space-between; align-items:flex-start}
     .hero-content{display:flex; gap:18px; align-items:flex-start}
     .avatar{
-      width:100px; height:100px; border-radius:50%;
+      width:100px; height:100px; border-radius:var(--radius);
       border:2px solid var(--line); flex-shrink:0; object-fit:cover;
     }
     .title{margin:0; font-size:30px; letter-spacing:.2px}
@@ -138,7 +138,18 @@
     .lightbox img{
       max-width:90vw; max-height:90vh; border-radius:12px;
       box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      cursor:default;
     }
+    .lightbox-nav{
+      position:absolute; top:50%; transform:translateY(-50%);
+      background:rgba(255,255,255,.15); border:none; color:#fff;
+      font-size:32px; width:50px; height:50px; border-radius:50%;
+      cursor:pointer; transition: background 0.2s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .lightbox-nav:hover{background:rgba(255,255,255,.3)}
+    .lightbox-prev{left:20px}
+    .lightbox-next{right:20px}
     footer{
       margin-top:24px; padding-top:14px; color:var(--muted);
       display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
@@ -384,7 +395,9 @@
     </section>
 
     <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-      <img id="lightbox-img" src="" alt="">
+      <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)">&#10094;</button>
+      <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+      <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)">&#10095;</button>
     </div>
 
     <footer>
@@ -400,12 +413,26 @@
   <script>
     document.getElementById("y").textContent = new Date().getFullYear();
     
+    let currentIndex = 0;
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    
     function openLightbox(el) {
-      const img = el.querySelector('img');
-      document.getElementById('lightbox-img').src = img.src;
-      document.getElementById('lightbox-img').alt = img.alt;
+      const items = Array.from(galleryItems);
+      currentIndex = items.indexOf(el);
+      updateLightboxImage();
       document.getElementById('lightbox').classList.add('active');
       document.body.style.overflow = 'hidden';
+    }
+    
+    function updateLightboxImage() {
+      const img = galleryItems[currentIndex].querySelector('img');
+      document.getElementById('lightbox-img').src = img.src;
+      document.getElementById('lightbox-img').alt = img.alt;
+    }
+    
+    function navigateLightbox(direction) {
+      currentIndex = (currentIndex + direction + galleryItems.length) % galleryItems.length;
+      updateLightboxImage();
     }
     
     function closeLightbox() {
@@ -414,7 +441,10 @@
     }
     
     document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('lightbox').classList.contains('active')) return;
       if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
     });
   </script>
 </body>

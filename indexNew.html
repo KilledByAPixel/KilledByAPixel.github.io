@@ -382,13 +382,6 @@
       flex-direction:column; gap:12px;
     }
     .lightbox.active{display:flex}
-    .lightbox::before{
-      content:""; position:absolute; inset:0; pointer-events:none;
-      background:repeating-linear-gradient(to bottom,
-        transparent 0, transparent 2px,
-        rgba(0,0,0,.5) 2px, rgba(0,0,0,.5) 3px);
-      mix-blend-mode:multiply;
-    }
     .lightbox img{
       max-width:90vw; max-height:78vh;
       cursor:default;

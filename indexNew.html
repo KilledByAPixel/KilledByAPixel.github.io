@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Frank Force | KilledByAPixel</title>
+  <meta name="description" content="Game developer and generative artist in Austin, TX. Creator of LittleJS and ZzFX. 1,000+ tiny JavaScript demos and award-winning optical illusion work." />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0a0a0f" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Frank Force | KilledByAPixel" />
+  <meta property="og:description" content="Game developer and generative artist. Creator of LittleJS and ZzFX. 1,000+ tiny JS demos." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://killedbyapixel.github.io/" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ink:#0a0a0f;
+      --magenta:#ff2e88;
+      --cyan:#4deaff;
+      --yellow:#ffe14a;
+      --cream:#f3e9d2;
+      --purple:#1a0d26;
+      --muted:#9d9a92;
+      --max:1040px;
+      --gap:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{scrollbar-color: var(--magenta) var(--ink);}
+    body{
+      margin:0;
+      background:var(--ink);
+      color:var(--cream);
+      font: 15px/1.6 "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      overflow-x:hidden;
+    }
+
+    /* ── layered textures ─────────────────────────── */
+    #bgcanvas{
+      position:fixed; inset:0; width:100%; height:100%;
+      z-index:0; display:block;
+    }
+    .scanlines{
+      position:fixed; inset:0; pointer-events:none; z-index:2;
+      background:repeating-linear-gradient(
+        to bottom,
+        transparent 0, transparent 2px,
+        rgba(0,0,0,.35) 2px, rgba(0,0,0,.35) 3px
+      );
+      mix-blend-mode:multiply;
+    }
+    .noise{
+      position:fixed; inset:0; pointer-events:none; z-index:3;
+      opacity:.06;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .75 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+
+    /* ── layout ──────────────────────────────────── */
+    .wrap{
+      position:relative; z-index:5;
+      max-width:var(--max); margin:0 auto;
+      padding:20px 18px 40px;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{color:var(--yellow)}
+
+    /* ── hero ────────────────────────────────────── */
+    .hero{
+      position:relative;
+      margin-top:8px;
+      padding:20px 18px 22px;
+      background:rgba(10,10,15,.7);
+      border:1px solid var(--magenta);
+      box-shadow: 6px 6px 0 var(--magenta);
+    }
+    .hero::before{
+      content:""; position:absolute; inset:2px;
+      border:1px solid var(--cyan); pointer-events:none;
+    }
+    #marquee{
+      display:block; width:100%; height:44px;
+      margin-bottom:18px;
+      image-rendering:pixelated;
+      border:1px solid var(--cyan);
+      background:#000;
+    }
+
+    .hero-body{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:22px; align-items:center;
+    }
+    .avatar-frame{
+      width:112px; height:112px; flex-shrink:0;
+      position:relative;
+      padding:4px;
+      background:var(--magenta);
+      box-shadow:
+        0 0 0 2px var(--ink),
+        0 0 0 4px var(--cyan),
+        0 0 0 6px var(--ink),
+        0 0 0 7px var(--magenta);
+    }
+    .avatar-frame img{
+      width:100%; height:100%; display:block;
+      object-fit:cover;
+      image-rendering:pixelated;
+      filter: contrast(1.15) saturate(.5);
+    }
+
+    .nameblock{min-width:0}
+    .title{
+      margin:0; padding:0;
+      font-family:"Silkscreen", monospace; font-weight:700;
+      font-size:clamp(32px, 6.5vw, 56px);
+      line-height:1;
+      color:var(--magenta);
+      text-shadow: 4px 4px 0 var(--cyan);
+      letter-spacing:1px;
+      cursor:default;
+      user-select:none;
+    }
+    .title:hover{
+      animation: glitch 80ms steps(1) 2;
+    }
+    @keyframes glitch{
+      0%   { transform: translate(0,0); text-shadow: 4px 4px 0 var(--cyan); }
+      33%  { transform: translate(2px,-1px); text-shadow: -2px 0 0 var(--magenta), 2px 0 0 var(--cyan); }
+      66%  { transform: translate(-2px,1px); text-shadow: 2px 0 0 var(--yellow), -2px 0 0 var(--cyan); }
+      100% { transform: translate(0,0); text-shadow: 4px 4px 0 var(--cyan); }
+    }
+    .subtitle{
+      margin:14px 0 0;
+      color:var(--cream);
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .subtitle .prompt{color:var(--magenta)}
+    .subtitle .slash{color:var(--cyan)}
+    .cursor{
+      display:inline-block; width:.6em; background:var(--cream);
+      animation: blink 1s steps(1) infinite; color:transparent;
+      margin-left:2px;
+    }
+    @keyframes blink{ 50%{ opacity:0 } }
+
+    /* ── nav ─────────────────────────────────────── */
+    .nav{
+      margin-top:20px;
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .nav-btn{
+      font-family:"Silkscreen", monospace; font-size:12px;
+      padding:9px 10px;
+      color:var(--cream);
+      background:transparent;
+      border:1px solid var(--cyan);
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      transition: background 0s steps(1), color 0s steps(1), border-color 0s steps(1);
+    }
+    .nav-btn:hover, .nav-btn:focus-visible{
+      background:var(--magenta); color:var(--ink);
+      border-color:var(--magenta);
+      outline:none;
+    }
+
+    /* ── section titles ──────────────────────────── */
+    .section{margin-top:42px}
+    .section-title{
+      font-family:"Silkscreen", monospace; font-weight:400;
+      color:var(--magenta);
+      font-size:18px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      margin:0 0 18px;
+      display:flex; align-items:center; gap:14px;
+      padding-bottom:6px;
+    }
+    .section-title::after{
+      content:""; flex:1; height:1px;
+      background:var(--cyan);
+      align-self:center;
+    }
+    .blocks{ display:inline-flex; gap:2px; flex-shrink:0 }
+    .blocks i{
+      width:10px; height:10px; display:block;
+      background:var(--magenta);
+      animation: blockcycle 1.6s steps(1) infinite;
+    }
+    .blocks i:nth-child(1){ animation-delay:0s }
+    .blocks i:nth-child(2){ animation-delay:.2s }
+    .blocks i:nth-child(3){ animation-delay:.4s }
+    .blocks i:nth-child(4){ animation-delay:.6s }
+    .blocks i:nth-child(5){ animation-delay:.8s }
+    .blocks i:nth-child(6){ animation-delay:1.0s }
+    .blocks i:nth-child(7){ animation-delay:1.2s }
+    .blocks i:nth-child(8){ animation-delay:1.4s }
+    @keyframes blockcycle{
+      0%   { background: var(--magenta) }
+      25%  { background: var(--cyan) }
+      50%  { background: var(--yellow) }
+      75%  { background: var(--cream) }
+      100% { background: var(--magenta) }
+    }
+
+    .rec{
+      font-family:"Silkscreen", monospace; font-size:12px;
+      color:#ff3b3b; display:inline-flex; align-items:center; gap:6px;
+      flex-shrink:0;
+    }
+    .rec i{
+      width:8px; height:8px; background:#ff3b3b; display:block;
+      animation: blink 1s steps(1) infinite;
+    }
+
+    /* ── about ───────────────────────────────────── */
+    .about-prose{
+      max-width:680px;
+      font-size:14px;
+    }
+    .about-prose p{margin:0 0 14px}
+    .about-prose > p:first-child::first-letter{
+      font-family:"Silkscreen", monospace; font-weight:700;
+      color:var(--magenta);
+      float:left;
+      font-size:4.2em;
+      line-height:.86;
+      padding:6px 10px 0 0;
+    }
+    .about-prose .tag{
+      background:var(--cyan); color:var(--ink);
+      padding:1px 5px;
+      font-weight:500;
+    }
+    .small{color:var(--muted); font-size:13px}
+
+    /* ── card grid ──────────────────────────────── */
+    .grid{
+      display:grid; gap:var(--gap);
+      grid-template-columns:repeat(12, 1fr);
+    }
+    .card{
+      grid-column: span 6;
+      position:relative;
+      background:var(--ink);
+      padding:14px 14px 12px;
+      border:1px solid var(--magenta);
+      box-shadow:
+        0 0 0 2px var(--ink),
+        0 0 0 3px var(--cyan),
+        5px 5px 0 var(--magenta);
+      transition: box-shadow 200ms steps(3), transform 160ms steps(2);
+    }
+    .card:hover{
+      transform: translate(-2px,-2px);
+      box-shadow:
+        0 0 0 2px var(--ink),
+        0 0 0 3px var(--yellow),
+        7px 7px 0 var(--magenta);
+    }
+    .card img{
+      width:100%; display:block;
+      margin-bottom:10px;
+      image-rendering:pixelated;
+      cursor:pointer;
+      transition: transform 140ms cubic-bezier(.2,.7,.4,1);
+      transform-style: preserve-3d;
+      border:1px solid var(--cyan);
+    }
+    .card h3{
+      font-family:"Silkscreen", monospace; font-weight:400;
+      font-size:14px; margin:2px 0 4px;
+      color:var(--cream);
+      letter-spacing:.5px;
+      text-transform:uppercase;
+    }
+    .card p{
+      margin:0 0 10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .meta{display:flex; flex-wrap:wrap; gap:6px}
+    .chip{
+      font-family:"Silkscreen", monospace; font-size:11px;
+      padding:4px 7px;
+      color:var(--cream);
+      border:1px solid var(--cyan);
+      background:transparent;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      transition: background 0s steps(1), color 0s steps(1), border-color 0s steps(1);
+    }
+    .chip:hover, .chip:focus-visible{
+      background:var(--yellow); color:var(--ink);
+      border-color:var(--yellow);
+      outline:none;
+    }
+
+    /* grid breakage — desktop only */
+    @media (min-width: 760px){
+      .cards .card:nth-child(3n){ transform: translateY(14px) }
+      .cards .card:nth-child(5n){ transform: rotate(-.8deg) }
+      .cards .card:nth-child(3n):hover,
+      .cards .card:nth-child(5n):hover{
+        transform: translate(-2px,-2px) rotate(0deg);
+      }
+    }
+
+    /* ── videos ──────────────────────────────────── */
+    .video-card{
+      grid-column: span 6;
+      position:relative;
+      padding:10px;
+      background:var(--ink);
+      border:2px solid var(--cyan);
+    }
+    .video-card::before,
+    .video-card::after,
+    .video-card > .rivet{
+      content:""; position:absolute;
+      width:10px; height:10px; background:var(--magenta);
+      pointer-events:none;
+    }
+    .video-card::before{ top:4px; left:4px }
+    .video-card::after{ top:4px; right:4px }
+    .video-card > .rivet.bl{ bottom:4px; left:4px }
+    .video-card > .rivet.br{ bottom:4px; right:4px }
+    .video-card iframe{
+      width:100%; aspect-ratio:16/9; border:0; display:block;
+      margin-bottom:10px;
+      background:#000;
+    }
+    .video-card h3{
+      font-family:"Silkscreen", monospace; font-weight:400;
+      font-size:13px; margin:2px 0 4px;
+      color:var(--cream);
+      text-transform:uppercase;
+    }
+    .video-card p{margin:0; color:var(--muted); font-size:13px}
+
+    /* ── gallery ─────────────────────────────────── */
+    .gallery{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:3px;
+    }
+    .gallery-item{
+      aspect-ratio:1;
+      position:relative;
+      cursor:pointer;
+      overflow:hidden;
+      outline:1px solid var(--cyan);
+      outline-offset:-1px;
+      transition: transform 120ms steps(2), outline-color 120ms steps(1);
+    }
+    .gallery-item:hover{
+      transform: translate(0,-3px);
+      outline:2px solid var(--magenta);
+      outline-offset:-2px;
+      z-index:2;
+    }
+    .gallery-item::after{
+      content:""; position:absolute; right:0; bottom:0;
+      width:0; height:0;
+      border-right:14px solid var(--yellow);
+      border-top:14px solid transparent;
+      opacity:0;
+      transition: opacity 0s steps(1) 60ms;
+    }
+    .gallery-item:hover::after{ opacity:1 }
+    .gallery-item img{
+      width:100%; height:100%; display:block;
+      object-fit:cover;
+      image-rendering:pixelated;
+    }
+
+    /* ── lightbox ─────────────────────────────────── */
+    .lightbox{
+      display:none; position:fixed; inset:0; z-index:1000;
+      background:rgba(10,10,15,.94);
+      align-items:center; justify-content:center;
+      cursor:pointer; padding:24px;
+      flex-direction:column; gap:12px;
+    }
+    .lightbox.active{display:flex}
+    .lightbox::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:repeating-linear-gradient(to bottom,
+        transparent 0, transparent 2px,
+        rgba(0,0,0,.5) 2px, rgba(0,0,0,.5) 3px);
+      mix-blend-mode:multiply;
+    }
+    .lightbox img{
+      max-width:90vw; max-height:78vh;
+      cursor:default;
+      border:4px solid var(--magenta);
+      box-shadow: 8px 8px 0 var(--cyan);
+      image-rendering:pixelated;
+    }
+    .lightbox-caption{
+      font-family:"Silkscreen", monospace;
+      font-size:12px; color:var(--cream);
+      text-align:center; letter-spacing:.5px;
+      z-index:1;
+    }
+    .lightbox-caption .hint{color:var(--muted); margin-left:12px}
+    .lightbox-nav{
+      position:absolute; top:50%; transform:translateY(-50%);
+      background:transparent; border:2px solid var(--cyan); color:var(--cyan);
+      font-family:"Silkscreen", monospace;
+      font-size:20px; width:48px; height:48px;
+      cursor:pointer; z-index:2;
+      display:flex; align-items:center; justify-content:center;
+      transition: background 0s steps(1), color 0s steps(1), border-color 0s steps(1);
+    }
+    .lightbox-nav:hover{
+      background:var(--yellow); color:var(--ink); border-color:var(--yellow);
+    }
+    .lightbox-prev{left:20px}
+    .lightbox-next{right:20px}
+
+    /* ── footer ──────────────────────────────────── */
+    footer{
+      margin-top:44px; padding-top:16px;
+      border-top:1px solid var(--cyan);
+      font-size:12px; color:var(--muted);
+      text-align:left;
+      letter-spacing:.3px;
+    }
+    footer a{color:var(--cyan)}
+    footer a:hover{color:var(--yellow)}
+    footer .slash{color:var(--magenta); margin:0 10px}
+
+    /* ── sound toggle ───────────────────────────── */
+    .sound-toggle{
+      position:fixed; right:14px; bottom:14px; z-index:50;
+      font-family:"Silkscreen", monospace; font-size:11px;
+      padding:6px 9px;
+      background:var(--ink); color:var(--cream);
+      border:1px solid var(--cyan);
+      cursor:pointer;
+      letter-spacing:.5px;
+    }
+    .sound-toggle:hover{ background:var(--magenta); color:var(--ink); border-color:var(--magenta)}
+    .sound-toggle[aria-pressed="true"]{ color:var(--yellow); border-color:var(--yellow) }
+
+    /* ── responsive ─────────────────────────────── */
+    @media (max-width: 760px){
+      .hero-body{ grid-template-columns:1fr; text-align:center; justify-items:center }
+      .avatar-frame{ width:96px; height:96px }
+      .card, .video-card{ grid-column: span 12 }
+      .gallery{ grid-template-columns:repeat(3, 1fr) }
+      .nav{ justify-content:center }
+      .section-title{ font-size:15px }
+      #marquee{ height:36px }
+      .title{ text-shadow: 3px 3px 0 var(--cyan) }
+    }
+
+    /* ── reduced motion ─────────────────────────── */
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        animation-duration:.001ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.001ms !important;
+      }
+      .title:hover{ animation:none }
+    }
+
+    /* ── load reveal ─────────────────────────────── */
+    .reveal{ opacity:0; transform: translateY(8px) }
+    body.loaded .reveal{
+      opacity:1; transform:none;
+      transition: opacity 240ms steps(4), transform 240ms steps(4);
+    }
+    body.loaded .reveal[data-i="1"]{ transition-delay:.20s }
+    body.loaded .reveal[data-i="2"]{ transition-delay:.30s }
+    body.loaded .reveal[data-i="3"]{ transition-delay:.40s }
+    body.loaded .reveal[data-i="4"]{ transition-delay:.50s }
+    body.loaded .reveal[data-i="5"]{ transition-delay:.60s }
+
+    @media (prefers-reduced-motion: reduce){
+      .reveal{ opacity:1; transform:none }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="bgcanvas" aria-hidden="true"></canvas>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header class="hero reveal" data-i="1">
+      <canvas id="marquee" aria-hidden="true"></canvas>
+
+      <div class="hero-body">
+        <div class="avatar-frame">
+          <img src="images/profile.jpg" alt="Frank Force">
+        </div>
+        <div class="nameblock">
+          <h1 class="title" title="FRANK FORCE">FRANK FORCE</h1>
+          <p class="subtitle">
+            <span class="prompt">&gt;</span> GAME DEV <span class="slash">//</span>
+            GEN ART <span class="slash">//</span>
+            TINY CODE <span class="slash">//</span>
+            AUSTIN, TX<span class="cursor">_</span>
+          </p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Social links">
+        <a class="nav-btn" href="https://github.com/KilledByAPixel">[GITHUB]</a>
+        <a class="nav-btn" href="https://frankforce.com/">[BLOG]</a>
+        <a class="nav-btn" href="https://bsky.app/profile/frankforce.bsky.social">[BSKY]</a>
+        <a class="nav-btn" href="https://twitter.com/KilledByAPixel">[TWITTER]</a>
+        <a class="nav-btn" href="https://killedbyapixel.itch.io/">[ITCH]</a>
+        <a class="nav-btn" href="https://killedbyapixel.newgrounds.com/games">[NEWGROUNDS]</a>
+      </nav>
+    </header>
+
+    <section class="section reveal" data-i="2">
+      <h2 class="section-title">// ABOUT <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <div class="about-prose">
+        <p>
+          Hi, I'm Frank Force. I've been making videogames for over 30 years. I helped create many successful games and a few very unsuccessful ones. I have held key roles at <span class="tag">Certain Affinity</span>, <span class="tag">Rooster Teeth</span>, <span class="tag">Midway Games</span>, <span class="tag">Volition</span>, and several other game studios.
+        </p>
+        <p>
+          Over that time I also released a wide variety of games and tools to practice my craft and experiment with new ideas. I am also known for winning the Optical Illusion of the Year award by creating The Dual Axis Illusion. As a hobby I have enjoyed writing over 1000 super tiny programs that do all sorts of cool stuff.
+        </p>
+        <p class="small">
+          My company, Frank Force Games is located in Austin, Texas. We specialize in entertainment software development including games, art, tools, promotional software, and educational resources.
+        </p>
+      </div>
+    </section>
+
+    <section class="section reveal" data-i="3">
+      <h2 class="section-title">// FEATURED_PROJECTS <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <div class="grid cards">
+        <article class="card" data-link="https://github.com/KilledByAPixel/LittleJS">
+          <img src="images/LittleJSExamples.jpg" alt="LittleJS Engine">
+          <h3>LITTLEJS ENGINE</h3>
+          <p>Tiny, fast open source HTML5 game engine.</p>
+          <div class="meta">
+            <a class="chip" href="https://github.com/KilledByAPixel/LittleJS">[REPO]</a>
+            <a class="chip" href="https://killedbyapixel.github.io/LittleJS/examples/">[DEMOS]</a>
+            <a class="chip" href="https://github.com/KilledByAPixel/LittleJS-AI">[AI]</a>
+            <a class="chip" href="https://youtu.be/chuBzGjv7Ms?si=CRFy3BPq5ZEtqhqf">[TRAILER]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://killedbyapixel.github.io/ZzFX/">
+          <img src="images/ZzFX.jpg" alt="ZzFX Sound Effect Generator">
+          <h3>ZZFX SOUND GENERATOR</h3>
+          <p>Open source JavaScript sound FX system and editor.</p>
+          <div class="meta">
+            <a class="chip" href="https://github.com/KilledByAPixel/ZzFX">[REPO]</a>
+            <a class="chip" href="https://killedbyapixel.github.io/ZzFX/">[DEMO]</a>
+            <a class="chip" href="https://codepen.io/KilledByAPixel/full/BaowKzv">[BOARD]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://www.dwitter.net/u/KilledByAPixel/top">
+          <img src="images/Dweets.jpg" alt="Tiny JavaScript Demos">
+          <h3>TINY CODE EXPERIMENTS</h3>
+          <p>Programs with very small source code.</p>
+          <div class="meta">
+            <a class="chip" href="https://github.com/KilledByAPixel/TinyCode">[REPO]</a>
+            <a class="chip" href="https://www.dwitter.net/u/KilledByAPixel/top">[DWEETS]</a>
+            <a class="chip" href="https://www.pouet.net/user.php?who=102368">[POUET]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://zzart.3d2k.com/">
+          <img src="images/ZzArt.jpg" alt="ZzArt Generative Art">
+          <h3>ZZART / GLSL EVOLUTION</h3>
+          <p>Generate abstract art by evolving GLSL shaders.</p>
+          <div class="meta">
+            <a class="chip" href="https://github.com/KilledByAPixel/ZzArt">[REPO]</a>
+            <a class="chip" href="https://zzart.3d2k.com/">[DEMO]</a>
+            <a class="chip" href="https://imgur.com/gallery/100-best-zzart-abstracts-pieces-zQXQcAP">[GALLERY]</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section reveal" data-i="4">
+      <h2 class="section-title">// FEATURED_GAMES <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <div class="grid cards">
+        <article class="card" data-link="https://killedbyapixel.itch.io/dr1v3n-wild">
+          <img src="images/DrivenWild.jpg" alt="Driven Wild">
+          <h3>DRIVEN WILD</h3>
+          <p>Procedural arcade driving.</p>
+          <div class="meta">
+            <a class="chip" href="https://killedbyapixel.itch.io/dr1v3n-wild">[PLAY]</a>
+            <a class="chip" href="https://github.com/KilledByAPixel/Drive13K">[SOURCE]</a>
+            <a class="chip" href="https://youtu.be/67j0Z9wJhvo?si=kHp3qPfcjhRVn-HO">[TRAILER]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://www.newgrounds.com/portal/view/819609">
+          <img src="images/SpaceHuggers.png" alt="Space Huggers">
+          <h3>SPACE HUGGERS</h3>
+          <p>Run-and-gun platformer roguelike.</p>
+          <div class="meta">
+            <a class="chip" href="https://www.newgrounds.com/portal/view/819609">[PLAY]</a>
+            <a class="chip" href="https://frankforce.com/space-huggers-how-i-made-a-game-in-13-kilobytes/">[POSTMORTEM]</a>
+            <a class="chip" href="https://github.com/KilledByAPixel/SpaceHuggers">[SOURCE]</a>
+            <a class="chip" href="https://youtu.be/6VXrnk18Z4s?si=wMCN_YYHoh53Ys_J">[TRAILER]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://killedbyapixel.itch.io/l1ttl3-paws">
+          <img src="images/LittlePaws.jpg" alt="L1TTL3 PAWS">
+          <h3>L1TTL3 PAWS</h3>
+          <p>Physics based cat sliding game.</p>
+          <div class="meta">
+            <a class="chip" href="https://killedbyapixel.itch.io/l1ttl3-paws">[PLAY]</a>
+            <a class="chip" href="https://github.com/KilledByAPixel/JS13K2025">[SOURCE]</a>
+            <a class="chip" href="https://youtu.be/leeqG-vjBXs?si=8MByMNL2ZXN0XJUf">[TRAILER]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://www.newgrounds.com/portal/view/755171">
+          <img src="images/BounceBack.png" alt="Bounce Back">
+          <h3>BOUNCE BACK</h3>
+          <p>Retro boomerang roguelite adventure.</p>
+          <div class="meta">
+            <a class="chip" href="https://www.newgrounds.com/portal/view/755171">[PLAY]</a>
+            <a class="chip" href="https://frankforce.com/bounce-back-postmortem/">[POSTMORTEM]</a>
+            <a class="chip" href="https://github.com/KilledByAPixel/BounceBack">[SOURCE]</a>
+            <a class="chip" href="https://youtu.be/XjhdNodZyL4?si=hYpl9D7b6RRQ4_72">[TRAILER]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://www.newgrounds.com/portal/view/747570">
+          <img src="images/BogusRoads.png" alt="Bogus Roads">
+          <h3>BOGUS ROADS</h3>
+          <p>Lowrez retrowave racing.</p>
+          <div class="meta">
+            <a class="chip" href="https://www.newgrounds.com/portal/view/747570">[PLAY]</a>
+            <a class="chip" href="https://youtu.be/txcH9sB9UTM?si=BDknsy2YBVv9LigA">[TRAILER]</a>
+          </div>
+        </article>
+
+        <article class="card" data-link="https://undergrowth.squidband.uk/">
+          <img src="images/Undergrowth.jpg" alt="Undergrowth">
+          <h3>UNDERGROWTH / SQUID</h3>
+          <p>Promo game for the band Squid.</p>
+          <div class="meta">
+            <a class="chip" href="https://undergrowth.squidband.uk/">[PLAY]</a>
+            <a class="chip" href="https://youtu.be/U2V1L11j_cs?si=WxPllEg1gFd2K1Vt">[TRAILER]</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section reveal" data-i="5">
+      <h2 class="section-title">// VIDEOS <span class="rec" aria-hidden="true"><i></i>REC</span><span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <div class="grid">
+        <article class="video-card">
+          <span class="rivet bl"></span><span class="rivet br"></span>
+          <iframe src="https://www.youtube.com/embed/CagnRwPkw_M" loading="lazy" allowfullscreen title="JavaScript Haikus"></iframe>
+          <h3>JAVASCRIPT HAIKUS</h3>
+          <p>2024 – Live at Nerd Nite Austin</p>
+        </article>
+
+        <article class="video-card">
+          <span class="rivet bl"></span><span class="rivet br"></span>
+          <iframe src="https://www.youtube.com/embed/_dXKU0WgAj8" loading="lazy" allowfullscreen title="Making Awesome Games with LittleJS"></iframe>
+          <h3>MAKING GAMES / LITTLEJS</h3>
+          <p>2022 – JS GameDev Summit</p>
+        </article>
+
+        <article class="video-card">
+          <span class="rivet bl"></span><span class="rivet br"></span>
+          <iframe src="https://www.youtube.com/embed/HC0GGkNZPgs" loading="lazy" allowfullscreen title="Dual Axis Illusion"></iframe>
+          <h3>DUAL AXIS ILLUSION</h3>
+          <p>Best Illusion of the Year Contest – 2019</p>
+        </article>
+
+        <article class="video-card">
+          <span class="rivet bl"></span><span class="rivet br"></span>
+          <iframe src="https://www.youtube.com/embed/m9VMf790ld8" loading="lazy" allowfullscreen title="Piroot Game Trailer"></iframe>
+          <h3>PIROOT TRAILER</h3>
+          <p><a href="https://store.steampowered.com/app/2523510/Piroot">Action adventure coming soon to Steam.</a></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section reveal" data-i="5">
+      <h2 class="section-title">// GENERATIVE_ART <span style="font-family:'Silkscreen',monospace;font-size:11px;color:var(--cyan);flex-shrink:0;">[ 12 PIECES ]</span><span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <div class="gallery">
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/AstronomicComics.jpg" alt="Astronomic Comics"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/AutoPark.jpg" alt="Auto Park"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/Roil.jpg" alt="Roil"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/Chaospill.jpg" alt="Chaospill"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/DitheredBranches.jpg" alt="Dithered Branches"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/DividByCircle.jpg" alt="Divid By Circle"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/GradientAscent.jpg" alt="Gradient Ascent"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/FlexagonFactory.jpg" alt="Flexagon Factory"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/Gensuzendo.jpg" alt="Gensuzendo"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/BrokenFlows.jpg" alt="Broken Flows"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/RadImpressions.jpg" alt="Rad Impressions"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="art/TreeSky.jpg" alt="Tree Sky"></div>
+      </div>
+      <p class="small" style="margin-top:14px;margin-bottom:0">
+        More artwork: <a href="https://www.fxhash.xyz/u/KilledByAPixel">fxhash</a> / <a href="https://256.art/artist/frankforce">256.art</a>
+      </p>
+    </section>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+      <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)" aria-label="Previous">&#9664;</button>
+      <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+      <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)" aria-label="Next">&#9654;</button>
+    </div>
+
+    <footer>
+      <span>© <span id="y"></span> KILLEDBYAPIXEL</span>
+      <span class="slash">//</span>
+      <span>MADE BY HAND IN AUSTIN, TX</span>
+      <span class="slash">//</span>
+      <a href="https://github.com/KilledByAPixel/KilledByAPixel.github.io">[VIEW_SOURCE]</a>
+      <span class="cursor" style="margin-left:6px">_</span>
+    </footer>
+  </div>
+
+  <button class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Toggle sound effects">[ SOUND: OFF ]</button>
+
+  <script>
+    /* ── year ──────────────────────────────────── */
+    document.getElementById("y").textContent = new Date().getFullYear();
+
+    /* ── reduced motion check ──────────────────── */
+    const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ── load reveal ───────────────────────────── */
+    requestAnimationFrame(() => {
+      document.body.classList.add('loaded');
+    });
+
+    /* ── background canvas: drifting pixel particles ── */
+    (() => {
+      const c = document.getElementById('bgcanvas');
+      const ctx = c.getContext('2d');
+      const palette = ['#ff2e88','#4deaff','#ffe14a','#f3e9d2','#ff6aa0','#83f1ff'];
+      let W=0, H=0, dpr=1, parts=[];
+      const MAX = matchMedia('(max-width:760px)').matches ? 30 : 60;
+
+      const resize = () => {
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        W = c.width = innerWidth * dpr;
+        H = c.height = innerHeight * dpr;
+        c.style.width = innerWidth+'px';
+        c.style.height= innerHeight+'px';
+      };
+      resize();
+      addEventListener('resize', resize);
+
+      const spawn = () => ({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        vx: (Math.random()-.5)*0.25*dpr,
+        vy: (Math.random()-.5)*0.25*dpr,
+        s: (1 + Math.floor(Math.random()*3))*dpr,
+        c: palette[Math.floor(Math.random()*palette.length)],
+        l: 120 + Math.random()*240
+      });
+      for (let i=0;i<MAX;i++) parts.push(spawn());
+
+      let running = true;
+      document.addEventListener('visibilitychange', () => {
+        running = !document.hidden;
+        if (running) step();
+      });
+
+      const step = () => {
+        if (!running || REDUCED) return;
+        // faint trail: paint near-opaque ink
+        ctx.fillStyle = 'rgba(10,10,15,0.12)';
+        ctx.fillRect(0,0,W,H);
+        for (const p of parts){
+          p.x += p.vx; p.y += p.vy; p.l--;
+          if (p.x<0||p.x>W||p.y<0||p.y>H||p.l<=0){
+            Object.assign(p, spawn(), { x: Math.random()*W, y: Math.random()*H });
+          }
+          ctx.fillStyle = p.c;
+          ctx.globalAlpha = 0.55;
+          ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(step);
+      };
+
+      if (REDUCED){
+        // draw a single static frame
+        ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
+        for (const p of parts){
+          ctx.fillStyle = p.c;
+          ctx.globalAlpha = 0.55;
+          ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
+        }
+      } else {
+        step();
+      }
+    })();
+
+    /* ── hero marquee canvas: scrolling palette bars ── */
+    (() => {
+      const c = document.getElementById('marquee');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      const palette = ['#ff2e88','#4deaff','#ffe14a','#f3e9d2','#1a0d26','#ff6aa0'];
+      let W=0, H=0, off=0;
+      const resize = () => {
+        const dpr = Math.min(devicePixelRatio||1, 1.5);
+        W = c.width = c.clientWidth * dpr;
+        H = c.height = c.clientHeight * dpr;
+      };
+      resize();
+      addEventListener('resize', resize);
+
+      const draw = () => {
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+        const bw = 18 * Math.min(devicePixelRatio||1,1.5);
+        for (let x = -bw - (off%bw); x < W + bw; x += bw){
+          const idx = ((x+off)/bw | 0) + 1000;
+          ctx.fillStyle = palette[idx % palette.length];
+          // fill most of the bar, leave tiny gap
+          ctx.fillRect(x|0, 0, Math.ceil(bw-2), H);
+        }
+        // stacked small blocks traveling faster
+        for (let i=0;i<8;i++){
+          const bx = ((off*3 + i*140) % (W + 60)) - 40;
+          ctx.fillStyle = ['#ffe14a','#ff2e88','#4deaff','#f3e9d2'][i%4];
+          ctx.fillRect(bx|0, (H/2 - 5)|0, 10, 10);
+        }
+        off += REDUCED ? 0 : 1.1;
+        if (!REDUCED) requestAnimationFrame(draw);
+      };
+      draw();
+    })();
+
+    /* ── quantized 3D tilt on card images ──────── */
+    document.querySelectorAll('.card img').forEach(img => {
+      const card = img.closest('.card');
+      const link = card?.dataset.link;
+
+      if (!REDUCED){
+        img.addEventListener('mousemove', (e) => {
+          const r = img.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width;
+          const y = (e.clientY - r.top)  / r.height;
+          // quantize to 2deg steps
+          const tiltX = Math.round((y - 0.5) * 20 / 2) * 2;
+          const tiltY = Math.round((x - 0.5) * -20 / 2) * 2;
+          img.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.04)`;
+        });
+        img.addEventListener('mouseleave', () => { img.style.transform = ''; });
+      }
+
+      if (link){
+        img.addEventListener('click', () => {
+          beep(660, 0.04);
+          window.open(link, '_blank');
+        });
+      }
+    });
+
+    /* ── lightbox ──────────────────────────────── */
+    let currentIndex = 0;
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    function openLightbox(el){
+      const items = Array.from(galleryItems);
+      currentIndex = items.indexOf(el);
+      updateLightboxImage();
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      beep(520, 0.04);
+    }
+    function updateLightboxImage(){
+      const img = galleryItems[currentIndex].querySelector('img');
+      document.getElementById('lightbox-img').src = img.src;
+      document.getElementById('lightbox-img').alt = img.alt;
+      const filename = img.src.split('/').pop();
+      const cap = document.getElementById('lightbox-caption');
+      cap.innerHTML = `[ ${currentIndex+1} / ${galleryItems.length} ]  ${filename.toUpperCase()} <span class="hint">[ESC] CLOSE &nbsp; [&larr;/&rarr;] NAV</span>`;
+    }
+    function navigateLightbox(d){
+      currentIndex = (currentIndex + d + galleryItems.length) % galleryItems.length;
+      updateLightboxImage();
+      beep(440, 0.03);
+    }
+    function closeLightbox(){
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+      beep(260, 0.04);
+    }
+    document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('lightbox').classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
+    });
+
+    /* ── ZzFX-flavored sound toggle ──────────── */
+    let soundOn = (localStorage.getItem('sndOn') === '1');
+    let audioCtx = null;
+    let lastBeep = 0;
+
+    const toggle = document.getElementById('soundToggle');
+    const renderToggle = () => {
+      toggle.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+      toggle.textContent = soundOn ? '[ SOUND: ON ]' : '[ SOUND: OFF ]';
+    };
+    renderToggle();
+    toggle.addEventListener('click', () => {
+      soundOn = !soundOn;
+      localStorage.setItem('sndOn', soundOn ? '1' : '0');
+      renderToggle();
+      if (soundOn) beep(880, 0.05);
+    });
+
+    function beep(freq=440, dur=0.04){
+      if (!soundOn) return;
+      const now = performance.now();
+      if (now - lastBeep < 40) return;
+      lastBeep = now;
+      try{
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur + 0.02);
+      }catch(_){}
+    }
+
+    // subtle ticks on hover for chips and nav when sound is on
+    document.querySelectorAll('.chip, .nav-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => beep(1100, 0.02));
+      el.addEventListener('click', () => beep(740, 0.04));
+    });
+  </script>
+</body>
+</html>

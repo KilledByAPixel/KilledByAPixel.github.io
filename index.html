@@ -711,6 +711,7 @@
       const FLEE_R = 90;        // cursor scare radius, css px
       const FLEE_FORCE = 0.5;   // px/frame added at point-blank range
       const KILL_R = 26;        // click hitbox, css px
+      const FADE = 8;           // trail fade, channel units per frame (1-255)
 
       const resize = () => {
         dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -773,9 +774,18 @@
 
       const step = () => {
         if (!running || REDUCED) return;
-        // faint trail: paint near-opaque ink
-        ctx.fillStyle = 'rgba(10,10,15,0.12)';
+        // trail fade without ghosting: invert, add FADE, invert back =
+        // linear subtract with a hard clamp at 0, so trails fully decay
+        ctx.globalCompositeOperation = 'difference';
+        ctx.fillStyle = '#fff';
         ctx.fillRect(0,0,W,H);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `rgb(${FADE},${FADE},${FADE})`;
+        ctx.fillRect(0,0,W,H);
+        ctx.globalCompositeOperation = 'difference';
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,W,H);
+        ctx.globalCompositeOperation = 'source-over';
         const mx = mouse.x*dpr, my = mouse.y*dpr, R = FLEE_R*dpr;
         for (const p of parts){
           const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;

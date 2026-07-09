@@ -52,14 +52,9 @@
       background:repeating-linear-gradient(
         to bottom,
         transparent 0, transparent 2px,
-        rgba(0,0,0,.35) 2px, rgba(0,0,0,.35) 3px
+        rgba(0,0,0,.16) 2px, rgba(0,0,0,.16) 3px
       );
       mix-blend-mode:multiply;
-    }
-    .noise{
-      position:fixed; inset:0; pointer-events:none; z-index:3;
-      opacity:.06;
-      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .75 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     }
 
     /* ── layout ──────────────────────────────────── */
@@ -85,12 +80,17 @@
       content:""; position:absolute; inset:2px;
       border:1px solid var(--cyan); pointer-events:none;
     }
-    #marquee{
-      display:block; width:100%; height:44px;
+    .colorbars{
+      height:10px;
       margin-bottom:18px;
-      image-rendering:pixelated;
-      border:1px solid var(--cyan);
-      background:#000;
+      background:linear-gradient(to right,
+        var(--cream)   0 14.28%,
+        var(--yellow)  0 28.57%,
+        var(--cyan)    0 42.85%,
+        #83f1ff        0 57.14%,
+        var(--magenta) 0 71.42%,
+        #ff6aa0        0 85.71%,
+        var(--purple)  0 100%);
     }
 
     .hero-body{
@@ -105,9 +105,7 @@
       background:var(--magenta);
       box-shadow:
         0 0 0 2px var(--ink),
-        0 0 0 4px var(--cyan),
-        0 0 0 6px var(--ink),
-        0 0 0 7px var(--magenta);
+        0 0 0 3px var(--cyan);
     }
     .avatar-frame img{
       width:100%; height:100%; display:block;
@@ -190,52 +188,12 @@
       background:var(--cyan);
       align-self:center;
     }
-    .blocks{ display:inline-flex; gap:2px; flex-shrink:0 }
-    .blocks i{
-      width:10px; height:10px; display:block;
-      background:var(--magenta);
-      animation: blockcycle 1.6s steps(1) infinite;
-    }
-    .blocks i:nth-child(1){ animation-delay:0s }
-    .blocks i:nth-child(2){ animation-delay:.2s }
-    .blocks i:nth-child(3){ animation-delay:.4s }
-    .blocks i:nth-child(4){ animation-delay:.6s }
-    .blocks i:nth-child(5){ animation-delay:.8s }
-    .blocks i:nth-child(6){ animation-delay:1.0s }
-    .blocks i:nth-child(7){ animation-delay:1.2s }
-    .blocks i:nth-child(8){ animation-delay:1.4s }
-    @keyframes blockcycle{
-      0%   { background: var(--magenta) }
-      25%  { background: var(--cyan) }
-      50%  { background: var(--yellow) }
-      75%  { background: var(--cream) }
-      100% { background: var(--magenta) }
-    }
-
-    .rec{
-      font-family:"Silkscreen", monospace; font-size:12px;
-      color:#ff3b3b; display:inline-flex; align-items:center; gap:6px;
-      flex-shrink:0;
-    }
-    .rec i{
-      width:8px; height:8px; background:#ff3b3b; display:block;
-      animation: blink 1s steps(1) infinite;
-    }
-
     /* ── about ───────────────────────────────────── */
     .about-prose{
       max-width:680px;
       font-size:14px;
     }
     .about-prose p{margin:0 0 14px}
-    .about-prose > p:first-child::first-letter{
-      font-family:"Silkscreen", monospace; font-weight:700;
-      color:var(--magenta);
-      float:left;
-      font-size:4.2em;
-      line-height:.86;
-      padding:6px 10px 0 0;
-    }
     .about-prose .tag{
       background:var(--cyan); color:var(--ink);
       padding:1px 5px;
@@ -320,6 +278,7 @@
     .video-card iframe{
       width:100%; aspect-ratio:16/9; display:block;
       border:1px solid var(--cyan);
+      padding:2px;
       margin-bottom:10px;
       background:#000;
     }
@@ -425,7 +384,6 @@
       .gallery{ grid-template-columns:repeat(3, 1fr) }
       .nav{ justify-content:center }
       .section-title{ font-size:15px }
-      #marquee{ height:36px }
       .title{ text-shadow: 3px 3px 0 var(--cyan) }
     }
 
@@ -461,11 +419,10 @@
 <body>
   <canvas id="bgcanvas" aria-hidden="true"></canvas>
   <div class="scanlines" aria-hidden="true"></div>
-  <div class="noise" aria-hidden="true"></div>
 
   <div class="wrap">
     <header class="hero reveal" data-i="1">
-      <canvas id="marquee" aria-hidden="true"></canvas>
+      <div class="colorbars" aria-hidden="true"></div>
 
       <div class="hero-body">
         <div class="avatar-frame">
@@ -493,7 +450,7 @@
     </header>
 
     <section class="section reveal" data-i="2">
-      <h2 class="section-title">// ABOUT <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <h2 class="section-title">// ABOUT</h2>
       <div class="about-prose">
         <p>
           Hi, I'm Frank Force. I've been making videogames for over 30 years. I helped create many successful games and a few very unsuccessful ones. I have held key roles at <span class="tag">Certain Affinity</span>, <span class="tag">Rooster Teeth</span>, <span class="tag">Midway Games</span>, <span class="tag">Volition</span>, and several other game studios.
@@ -508,7 +465,7 @@
     </section>
 
     <section class="section reveal" data-i="3">
-      <h2 class="section-title">// FEATURED_PROJECTS <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <h2 class="section-title">// FEATURED_PROJECTS</h2>
       <div class="grid cards">
         <article class="card" data-link="https://github.com/KilledByAPixel/LittleJS">
           <img src="images/LittleJSExamples.jpg" alt="LittleJS Engine">
@@ -578,7 +535,7 @@
     </section>
 
     <section class="section reveal" data-i="4">
-      <h2 class="section-title">// FEATURED_GAMES <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <h2 class="section-title">// FEATURED_GAMES</h2>
       <div class="grid cards">
         <article class="card" data-link="https://killedbyapixel.itch.io/dr1v3n-wild">
           <img src="images/DrivenWild.jpg" alt="Driven Wild">
@@ -649,7 +606,7 @@
     </section>
 
     <section class="section reveal" data-i="5">
-      <h2 class="section-title">// VIDEOS <span class="rec" aria-hidden="true"><i></i>REC</span><span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <h2 class="section-title">// VIDEOS</h2>
       <div class="grid">
         <article class="video-card">
           <iframe src="https://www.youtube.com/embed/CagnRwPkw_M" loading="lazy" allowfullscreen title="JavaScript Haikus"></iframe>
@@ -678,7 +635,7 @@
     </section>
 
     <section class="section reveal" data-i="6">
-      <h2 class="section-title">// GENERATIVE_ART <span style="font-family:'Silkscreen',monospace;font-size:11px;color:var(--cyan);flex-shrink:0;">[ 16 PIECES ]</span><span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
+      <h2 class="section-title">// GENERATIVE_ART</h2>
       <div class="gallery">
         <div class="gallery-item" onclick="openLightbox(this)"><img src="art/NeonPlotComics.jpg" alt="Neon Plot Comics"></div>
         <div class="gallery-item" onclick="openLightbox(this)"><img src="art/PlotComics.jpg" alt="Plot Comics"></div>
@@ -723,7 +680,6 @@
       <span>MADE BY HAND IN AUSTIN, TX</span>
       <span class="slash">//</span>
       <a href="https://github.com/KilledByAPixel/KilledByAPixel.github.io">[VIEW_SOURCE]</a>
-      <span class="cursor" style="margin-left:6px">_</span>
     </footer>
   </div>
 
@@ -785,7 +741,7 @@
             Object.assign(p, spawn(), { x: Math.random()*W, y: Math.random()*H });
           }
           ctx.fillStyle = p.c;
-          ctx.globalAlpha = 0.55;
+          ctx.globalAlpha = 0.45;
           ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
         }
         ctx.globalAlpha = 1;
@@ -797,48 +753,12 @@
         ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
         for (const p of parts){
           ctx.fillStyle = p.c;
-          ctx.globalAlpha = 0.55;
+          ctx.globalAlpha = 0.45;
           ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
         }
       } else {
         step();
       }
-    })();
-
-    /* ── hero marquee canvas: scrolling palette bars ── */
-    (() => {
-      const c = document.getElementById('marquee');
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const palette = ['#ff2e88','#4deaff','#ffe14a','#f3e9d2','#1a0d26','#ff6aa0'];
-      let W=0, H=0, off=0;
-      const resize = () => {
-        const dpr = Math.min(devicePixelRatio||1, 1.5);
-        W = c.width = c.clientWidth * dpr;
-        H = c.height = c.clientHeight * dpr;
-      };
-      resize();
-      addEventListener('resize', resize);
-
-      const draw = () => {
-        ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
-        const bw = 18 * Math.min(devicePixelRatio||1,1.5);
-        for (let x = -bw - (off%bw); x < W + bw; x += bw){
-          const idx = ((x+off)/bw | 0) + 1000;
-          ctx.fillStyle = palette[idx % palette.length];
-          // fill most of the bar, leave tiny gap
-          ctx.fillRect(x|0, 0, Math.ceil(bw-2), H);
-        }
-        // stacked small blocks traveling faster
-        for (let i=0;i<8;i++){
-          const bx = ((off*3 + i*140) % (W + 60)) - 40;
-          ctx.fillStyle = ['#ffe14a','#ff2e88','#4deaff','#f3e9d2'][i%4];
-          ctx.fillRect(bx|0, (H/2 - 5)|0, 10, 10);
-        }
-        off += REDUCED ? 0 : 1.1;
-        if (!REDUCED) requestAnimationFrame(draw);
-      };
-      draw();
     })();
 
     /* ── quantized 3D tilt on card images ──────── */

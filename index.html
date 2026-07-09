@@ -374,6 +374,7 @@
     }
     footer a{color:var(--cyan)}
     footer a:hover{color:var(--yellow)}
+    footer b{color:var(--magenta); font-weight:400}
     footer .slash{color:var(--magenta); margin:0 10px}
 
     /* ── responsive ─────────────────────────────── */
@@ -680,6 +681,8 @@
       <span>MADE BY HAND IN AUSTIN, TX</span>
       <span class="slash">//</span>
       <a href="https://github.com/KilledByAPixel/KilledByAPixel.github.io">[VIEW_SOURCE]</a>
+      <span class="slash" data-kill hidden>//</span>
+      <span data-kill hidden>PIXELS_KILLED: <b id="killcount">0</b></span>
     </footer>
   </div>
 
@@ -695,13 +698,19 @@
       document.body.classList.add('loaded');
     });
 
-    /* ── background canvas: drifting pixel particles ── */
+    /* ── background canvas: drifting pixel particles ──
+       mini-game: pixels flee the cursor, click one to kill it */
     (() => {
       const c = document.getElementById('bgcanvas');
       const ctx = c.getContext('2d');
       const palette = ['#ff2e88','#4deaff','#ffe14a','#f3e9d2','#ff6aa0','#83f1ff'];
-      let W=0, H=0, dpr=1, parts=[];
+      let W=0, H=0, dpr=1, parts=[], kills=0;
+      const bursts = [];
       const MAX = matchMedia('(max-width:760px)').matches ? 30 : 60;
+      const mouse = {x:-1e4, y:-1e4};
+      const FLEE_R = 90;        // cursor scare radius, css px
+      const FLEE_FORCE = 0.5;   // px/frame added at point-blank range
+      const KILL_R = 26;        // click hitbox, css px
 
       const resize = () => {
         dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -718,11 +727,43 @@
         y: Math.random()*H,
         vx: (Math.random()-.5)*0.25*dpr,
         vy: (Math.random()-.5)*0.25*dpr,
+        fx: 0, fy: 0,
         s: (1 + Math.floor(Math.random()*3))*dpr,
         c: palette[Math.floor(Math.random()*palette.length)],
         l: 120 + Math.random()*240
       });
       for (let i=0;i<MAX;i++) parts.push(spawn());
+
+      addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+      document.documentElement.addEventListener('mouseleave', () => { mouse.x = mouse.y = -1e4; });
+
+      const burst = (x,y,col,size) => {
+        for (let i=0;i<8;i++){
+          const a = i/8*Math.PI*2 + Math.random()*.4;
+          const sp = (1 + Math.random()*1.6)*dpr;
+          bursts.push({
+            x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+            s:Math.max(dpr, size*.6), c:col, l:12 + Math.random()*10
+          });
+        }
+      };
+
+      document.addEventListener('click', e => {
+        if (REDUCED) return;
+        if (e.target.closest('a,button,iframe,.card,.video-card,.gallery-item,.avatar-frame,.lightbox')) return;
+        const mx = e.clientX*dpr, my = e.clientY*dpr;
+        let best = null, bestD = (KILL_R*dpr)**2;
+        for (const p of parts){
+          const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
+          if (d2 < bestD){ bestD = d2; best = p; }
+        }
+        if (!best) return;
+        burst(best.x, best.y, best.c, best.s);
+        Object.assign(best, spawn());
+        kills++;
+        document.getElementById('killcount').textContent = kills;
+        document.querySelectorAll('[data-kill]').forEach(el => el.hidden = false);
+      });
 
       let running = true;
       document.addEventListener('visibilitychange', () => {
@@ -735,14 +776,29 @@
         // faint trail: paint near-opaque ink
         ctx.fillStyle = 'rgba(10,10,15,0.12)';
         ctx.fillRect(0,0,W,H);
+        const mx = mouse.x*dpr, my = mouse.y*dpr, R = FLEE_R*dpr;
         for (const p of parts){
-          p.x += p.vx; p.y += p.vy; p.l--;
+          const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
+          if (d2 < R*R && d2 > 1){
+            const d = Math.sqrt(d2), f = (1 - d/R) * FLEE_FORCE * dpr;
+            p.fx += dx/d*f; p.fy += dy/d*f;
+          }
+          p.fx *= .9; p.fy *= .9;
+          p.x += p.vx + p.fx; p.y += p.vy + p.fy; p.l--;
           if (p.x<0||p.x>W||p.y<0||p.y>H||p.l<=0){
             Object.assign(p, spawn(), { x: Math.random()*W, y: Math.random()*H });
           }
           ctx.fillStyle = p.c;
           ctx.globalAlpha = 0.45;
           ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
+        }
+        for (let i=bursts.length-1; i>=0; i--){
+          const b = bursts[i];
+          b.x += b.vx; b.y += b.vy; b.l--;
+          if (b.l <= 0){ bursts.splice(i,1); continue; }
+          ctx.fillStyle = b.c;
+          ctx.globalAlpha = Math.min(1, b.l/12);
+          ctx.fillRect(b.x|0, b.y|0, b.s, b.s);
         }
         ctx.globalAlpha = 1;
         requestAnimationFrame(step);

@@ -698,20 +698,23 @@
       document.body.classList.add('loaded');
     });
 
-    /* ── background canvas: drifting pixel particles ──
-       mini-game: pixels flee the cursor, click one to kill it */
+    /* ── background canvas: parallax pixel starfield ──
+       mini-game: stars dodge the cursor, click one to kill it */
     (() => {
       const c = document.getElementById('bgcanvas');
       const ctx = c.getContext('2d');
-      const palette = ['#ff2e88','#4deaff','#ffe14a','#f3e9d2','#ff6aa0','#83f1ff'];
-      let W=0, H=0, dpr=1, parts=[], kills=0;
+      let W=0, H=0, dpr=1, stars=[], kills=0, meteor=null, lastScroll=scrollY;
       const bursts = [];
-      const MAX = matchMedia('(max-width:760px)').matches ? 30 : 60;
+      const MAX = matchMedia('(max-width:760px)').matches ? 100 : 250;
       const mouse = {x:-1e4, y:-1e4};
-      const FLEE_R = 90;        // cursor scare radius, css px
-      const FLEE_FORCE = 0.5;   // px/frame added at point-blank range
-      const KILL_R = 26;        // click hitbox, css px
-      const FADE = 8;           // trail fade, channel units per frame (1-255)
+      const FLEE_R = 90;          // cursor scare radius, css px (scaled by depth)
+      const FLEE_FORCE = 0.1;    // px/frame added at point-blank range
+      const KILL_R = 26;          // click hitbox, css px
+      const FADE = 8;             // trail fade, channel units per frame (1-255)
+      const DRIFT = 0.08;         // drift speed at depth 1, css px/frame
+      const PARALLAX = 0.1;       // scroll pan factor at depth 1
+      const TWINKLE_ODDS = 0.002; // per-star per-frame chance to twinkle
+      const METEOR_ODDS = 0.0015; // per-frame chance of a shooting star
 
       const resize = () => {
         dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -723,17 +726,20 @@
       resize();
       addEventListener('resize', resize);
 
-      const spawn = () => ({
-        x: Math.random()*W,
-        y: Math.random()*H,
-        vx: (Math.random()-.5)*0.25*dpr,
-        vy: (Math.random()-.5)*0.25*dpr,
-        fx: 0, fy: 0,
-        s: (1 + Math.floor(Math.random()*3))*dpr,
-        c: palette[Math.floor(Math.random()*palette.length)],
-        l: 120 + Math.random()*240
-      });
-      for (let i=0;i<MAX;i++) parts.push(spawn());
+      const starColor = () => {
+        const r = Math.random();
+        return r<.72 ? '#f3e9d2' : r<.82 ? '#4deaff' : r<.92 ? '#ff2e88' : '#ffe14a';
+      };
+      const spawn = () => {
+        const z = .2 + Math.random()*.8; // depth: 0 far, 1 near
+        return {
+          x: Math.random()*W, y: Math.random()*H,
+          z, fx:0, fy:0, tw:0,
+          s: (1 + (z>.6) + (z>.85))*dpr,
+          c: starColor()
+        };
+      };
+      for (let i=0;i<MAX;i++) stars.push(spawn());
 
       addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
       document.documentElement.addEventListener('mouseleave', () => { mouse.x = mouse.y = -1e4; });
@@ -754,7 +760,7 @@
         if (e.target.closest('a,button,iframe,.card,.video-card,.gallery-item,.avatar-frame,.lightbox')) return;
         const mx = e.clientX*dpr, my = e.clientY*dpr;
         let best = null, bestD = (KILL_R*dpr)**2;
-        for (const p of parts){
+        for (const p of stars){
           const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
           if (d2 < bestD){ bestD = d2; best = p; }
         }
@@ -772,6 +778,12 @@
         if (running) step();
       });
 
+      const drawStar = (p) => {
+        ctx.fillStyle = p.c;
+        ctx.globalAlpha = p.tw > 0 ? .95 : .25 + .55*p.z;
+        ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
+      };
+
       const step = () => {
         if (!running || REDUCED) return;
         // trail fade without ghosting: invert, add FADE, invert back =
@@ -786,22 +798,44 @@
         ctx.fillStyle = '#fff';
         ctx.fillRect(0,0,W,H);
         ctx.globalCompositeOperation = 'source-over';
+
         const mx = mouse.x*dpr, my = mouse.y*dpr, R = FLEE_R*dpr;
-        for (const p of parts){
+        const dScroll = scrollY - lastScroll; lastScroll = scrollY;
+        for (const p of stars){
+          // parallax: slow drift plus scroll pan, deeper stars move less
+          p.x -= DRIFT*p.z*dpr;
+          p.y -= dScroll*PARALLAX*p.z*dpr;
           const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
           if (d2 < R*R && d2 > 1){
-            const d = Math.sqrt(d2), f = (1 - d/R) * FLEE_FORCE * dpr;
+            const d = Math.sqrt(d2), f = (1 - d/R) * FLEE_FORCE * p.z * dpr;
             p.fx += dx/d*f; p.fy += dy/d*f;
           }
           p.fx *= .9; p.fy *= .9;
-          p.x += p.vx + p.fx; p.y += p.vy + p.fy; p.l--;
-          if (p.x<0||p.x>W||p.y<0||p.y>H||p.l<=0){
-            Object.assign(p, spawn(), { x: Math.random()*W, y: Math.random()*H });
-          }
-          ctx.fillStyle = p.c;
-          ctx.globalAlpha = 0.45;
-          ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
+          p.x += p.fx; p.y += p.fy;
+          if (p.x < -4) p.x += W+8; else if (p.x > W+4) p.x -= W+8;
+          if (p.y < -4) p.y += H+8; else if (p.y > H+4) p.y -= H+8;
+          if (p.tw > 0) p.tw--;
+          else if (Math.random() < TWINKLE_ODDS) p.tw = 4 + Math.random()*10 | 0;
+          drawStar(p);
         }
+
+        // rare shooting star; the FADE trick draws its tail for free
+        if (!meteor && Math.random() < METEOR_ODDS){
+          meteor = {
+            x: Math.random()*W, y: -10*dpr,
+            vx: (Math.random()<.5?-1:1)*(3+Math.random()*3)*dpr,
+            vy: (2+Math.random()*2)*dpr,
+            l: 90
+          };
+        }
+        if (meteor){
+          meteor.x += meteor.vx; meteor.y += meteor.vy; meteor.l--;
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = '#f3e9d2';
+          ctx.fillRect(meteor.x|0, meteor.y|0, 2*dpr, 2*dpr);
+          if (meteor.l<=0 || meteor.x<-20 || meteor.x>W+20 || meteor.y>H+20) meteor = null;
+        }
+
         for (let i=bursts.length-1; i>=0; i--){
           const b = bursts[i];
           b.x += b.vx; b.y += b.vy; b.l--;
@@ -817,11 +851,8 @@
       if (REDUCED){
         // draw a single static frame
         ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
-        for (const p of parts){
-          ctx.fillStyle = p.c;
-          ctx.globalAlpha = 0.45;
-          ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
-        }
+        for (const p of stars) drawStar(p);
+        ctx.globalAlpha = 1;
       } else {
         step();
       }

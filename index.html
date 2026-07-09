@@ -309,23 +309,17 @@
     .video-card{
       grid-column: span 6;
       position:relative;
-      padding:10px;
+      padding:14px 14px 12px;
       background:var(--ink);
-      border:2px solid var(--cyan);
+      border:1px solid var(--magenta);
+      box-shadow:
+        0 0 0 2px var(--ink),
+        0 0 0 3px var(--cyan),
+        5px 5px 0 var(--magenta);
     }
-    .video-card::before,
-    .video-card::after,
-    .video-card > .rivet{
-      content:""; position:absolute;
-      width:10px; height:10px; background:var(--magenta);
-      pointer-events:none;
-    }
-    .video-card::before{ top:4px; left:4px }
-    .video-card::after{ top:4px; right:4px }
-    .video-card > .rivet.bl{ bottom:4px; left:4px }
-    .video-card > .rivet.br{ bottom:4px; right:4px }
     .video-card iframe{
-      width:100%; aspect-ratio:16/9; border:0; display:block;
+      width:100%; aspect-ratio:16/9; display:block;
+      border:1px solid var(--cyan);
       margin-bottom:10px;
       background:#000;
     }
@@ -456,6 +450,7 @@
     body.loaded .reveal[data-i="3"]{ transition-delay:.40s }
     body.loaded .reveal[data-i="4"]{ transition-delay:.50s }
     body.loaded .reveal[data-i="5"]{ transition-delay:.60s }
+    body.loaded .reveal[data-i="6"]{ transition-delay:.70s }
 
     @media (prefers-reduced-motion: reduce){
       .reveal{ opacity:1; transform:none }
@@ -657,28 +652,24 @@
       <h2 class="section-title">// VIDEOS <span class="rec" aria-hidden="true"><i></i>REC</span><span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
       <div class="grid">
         <article class="video-card">
-          <span class="rivet bl"></span><span class="rivet br"></span>
           <iframe src="https://www.youtube.com/embed/CagnRwPkw_M" loading="lazy" allowfullscreen title="JavaScript Haikus"></iframe>
           <h3>JAVASCRIPT HAIKUS</h3>
           <p>2024 – Live at Nerd Nite Austin</p>
         </article>
 
         <article class="video-card">
-          <span class="rivet bl"></span><span class="rivet br"></span>
           <iframe src="https://www.youtube.com/embed/_dXKU0WgAj8" loading="lazy" allowfullscreen title="Making Awesome Games with LittleJS"></iframe>
           <h3>MAKING GAMES / LITTLEJS</h3>
           <p>2022 – JS GameDev Summit</p>
         </article>
 
         <article class="video-card">
-          <span class="rivet bl"></span><span class="rivet br"></span>
           <iframe src="https://www.youtube.com/embed/HC0GGkNZPgs" loading="lazy" allowfullscreen title="Dual Axis Illusion"></iframe>
           <h3>DUAL AXIS ILLUSION</h3>
           <p>Best Illusion of the Year Contest – 2019</p>
         </article>
 
         <article class="video-card">
-          <span class="rivet bl"></span><span class="rivet br"></span>
           <iframe src="https://www.youtube.com/embed/m9VMf790ld8" loading="lazy" allowfullscreen title="Piroot Game Trailer"></iframe>
           <h3>PIROOT TRAILER</h3>
           <p><a href="https://store.steampowered.com/app/2523510/Piroot">Action adventure coming soon to Steam.</a></p>
@@ -686,7 +677,7 @@
       </div>
     </section>
 
-    <section class="section reveal" data-i="5">
+    <section class="section reveal" data-i="6">
       <h2 class="section-title">// GENERATIVE_ART <span style="font-family:'Silkscreen',monospace;font-size:11px;color:var(--cyan);flex-shrink:0;">[ 16 PIECES ]</span><span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></h2>
       <div class="gallery">
         <div class="gallery-item" onclick="openLightbox(this)"><img src="art/NeonPlotComics.jpg" alt="Neon Plot Comics"></div>

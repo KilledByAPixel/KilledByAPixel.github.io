@@ -697,12 +697,12 @@
       document.body.classList.add('loaded');
     });
 
-    /* ── background canvas: parallax pixel starfield ──
+    /* ── background canvas: pixel starfield ──
        mini-game: stars dodge the cursor, click one to kill it */
     (() => {
       const c = document.getElementById('bgcanvas');
       const ctx = c.getContext('2d');
-      let W=0, H=0, dpr=1, stars=[], kills=0, meteor=null, lastScroll=scrollY;
+      let W=0, H=0, dpr=1, stars=[], kills=0, meteor=null;
       const bursts = [];
       const MAX = matchMedia('(max-width:760px)').matches ? 100 : 250;
       const mouse = {x:-1e4, y:-1e4};
@@ -711,16 +711,25 @@
       const KILL_R = 26;          // click hitbox, css px
       const FADE = 8;             // trail fade, channel units per frame (1-255)
       const DRIFT = 0.08;         // drift speed at depth 1, css px/frame
-      const PARALLAX = 0.1;       // scroll pan factor at depth 1
       const TWINKLE_ODDS = 0.002; // per-star per-frame chance to twinkle
       const METEOR_ODDS = 0.0015; // per-frame chance of a shooting star
 
       const resize = () => {
+        const oldW = W, oldH = H;
         dpr = Math.min(window.devicePixelRatio || 1, 1.5);
         W = c.width = innerWidth * dpr;
         H = c.height = innerHeight * dpr;
         c.style.width = innerWidth+'px';
         c.style.height= innerHeight+'px';
+        // stretch the existing field to the new canvas so a grown window
+        // does not leave stars packed in the old corner
+        if (oldW && oldH){
+          const sx = W/oldW, sy = H/oldH;
+          for (const p of stars){ p.x *= sx; p.y *= sy; }
+          for (const b of bursts){ b.x *= sx; b.y *= sy; }
+          if (meteor){ meteor.x *= sx; meteor.y *= sy; }
+          if (REDUCED) drawFrame();   // resizing cleared the one static frame
+        }
       };
       resize();
       addEventListener('resize', resize);
@@ -799,11 +808,9 @@
         ctx.globalCompositeOperation = 'source-over';
 
         const mx = mouse.x*dpr, my = mouse.y*dpr, R = FLEE_R*dpr;
-        const dScroll = scrollY - lastScroll; lastScroll = scrollY;
         for (const p of stars){
-          // parallax: slow drift plus scroll pan, deeper stars move less
+          // slow sideways drift, deeper stars move less
           p.x -= DRIFT*p.z*dpr;
-          p.y -= dScroll*PARALLAX*p.z*dpr;
           const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
           if (d2 < R*R && d2 > 1){
             const d = Math.sqrt(d2), f = (1 - d/R) * FLEE_FORCE * p.z * dpr;
@@ -847,14 +854,14 @@
         requestAnimationFrame(step);
       };
 
-      if (REDUCED){
-        // draw a single static frame
+      function drawFrame(){
         ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
         for (const p of stars) drawStar(p);
         ctx.globalAlpha = 1;
-      } else {
-        step();
       }
+
+      if (REDUCED) drawFrame();
+      else step();
     })();
 
     /* ── quantized 3D tilt on card images ──────── */

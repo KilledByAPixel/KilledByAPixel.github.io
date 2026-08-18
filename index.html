@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Frank Force | Software Engineer</title>
-  <meta name="description" content="Software engineer in Austin, TX with 25 years building real-time interactive software. Creator of LittleJS and ZzFX. Deep experience in JavaScript, WebGL, graphics, and tools." />
+  <meta name="description" content="Software engineer in Austin, TX with 25 years building real-time interactive software: engines, graphics, physics, simulation, procedural generation, and tools. Creator of LittleJS and ZzFX." />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#0a0a0f" />
 
@@ -21,14 +21,14 @@
   <style>
     :root{
       --void:#05060a;
-      --glass:rgba(7,8,12,.78);
-      --deep:rgba(5,6,10,.88);
+      --glass:rgba(7,8,12,.66);
+      --deep:rgba(5,6,10,.8);
       --ice:#eef1f6;
       --haze:rgba(238,241,246,.72);
       --wire:rgba(238,241,246,.18);
       --hot:rgba(238,241,246,.55);
       --max:1120px;
-      --gap:22px;
+      --gap:18px;
       --ease:cubic-bezier(.2,.8,.25,1);
     }
 
@@ -57,8 +57,8 @@
     .veil{
       position:fixed; inset:0; pointer-events:none; z-index:1;
       background:
-        radial-gradient(120% 80% at 50% 0%, transparent 30%, rgba(5,6,10,.75) 100%),
-        linear-gradient(rgba(5,6,10,.6), rgba(5,6,10,.6));
+        radial-gradient(115% 78% at 50% 0%, transparent 32%, rgba(5,6,10,.7) 100%),
+        linear-gradient(rgba(5,6,10,.52), rgba(5,6,10,.52));
     }
 
     /* ── shader readout ──────────────────────────── */
@@ -90,7 +90,7 @@
     /* ── hero ────────────────────────────────────── */
     /* the hero sits on the bare shader, so its type carries its own
        shadow instead of a panel — invisible on dark, saves it on bright */
-    .hero{ margin-bottom:96px; text-shadow:0 2px 18px rgba(5,6,10,.9) }
+    .hero{ margin-bottom:84px; text-shadow:0 2px 18px rgba(5,6,10,.9) }
 
     .title{
       margin:0;
@@ -114,8 +114,9 @@
 
     .lead{
       margin:26px 0 0;
-      max-width:48ch;
+      max-width:56ch;
       font-size:clamp(14px, 1.5vw, 16.5px);
+      text-wrap:balance;
       line-height:1.65;
       color:var(--ice);
       font-weight:300;
@@ -123,7 +124,7 @@
 
     .nav{ margin-top:32px; display:flex; flex-wrap:wrap; gap:8px }
     .nav a{
-      padding:9px 13px;
+      padding:8px 12px;
       font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
       color:var(--haze);
       border:1px solid var(--wire);
@@ -136,10 +137,10 @@
     }
 
     /* ── section heads ───────────────────────────── */
-    .section{ margin-top:88px }
+    .section{ margin-top:76px }
     .shead{
       display:flex; align-items:center; gap:18px;
-      margin:0 0 26px;
+      margin:0 0 22px;
       font-size:11px; font-weight:500;
       letter-spacing:.26em; text-transform:uppercase;
       color:var(--ice);
@@ -158,7 +159,7 @@
     /* ── about ───────────────────────────────────── */
     .about{
       max-width:74ch;
-      padding:26px 28px;
+      padding:24px 26px;
       background:var(--glass);
       border:1px solid var(--wire);
       backdrop-filter:blur(10px);
@@ -175,8 +176,11 @@
     .grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(12,1fr) }
     .card, .video-card{
       grid-column:span 6;
-      padding:14px 14px 16px;
-      background:var(--glass);
+      display:flex; flex-direction:column;
+      padding:12px 12px 14px;
+      /* denser fill instead of a backdrop blur: twelve blurred cards over an
+         animated shader costs real frames, and at this opacity nobody can tell */
+      background:rgba(7,8,12,.74);
       border:1px solid var(--wire);
       transition:border-color 200ms var(--ease), transform 300ms var(--ease), background 200ms var(--ease);
     }
@@ -185,24 +189,33 @@
       background:var(--deep);
       transform:translateY(-3px);
     }
-    .card figure{ margin:0 0 14px; overflow:hidden; line-height:0 }
+    /* every image gets the same frame, so rows line up no matter what
+       shape the source screenshot is */
+    .card figure{
+      margin:0 0 13px; overflow:hidden; line-height:0;
+      aspect-ratio:16/10;
+    }
     .card img{
-      width:100%; display:block;
+      width:100%; height:100%; display:block;
+      object-fit:cover;
       cursor:pointer;
       filter:saturate(.85) contrast(1.02);
       transform:scale(1.001);
       transition:transform 600ms var(--ease), filter 400ms var(--ease);
     }
-    .card:hover img{ transform:scale(1.04); filter:none }
+    .card:hover img{ transform:scale(1.045); filter:none }
     .card h3, .video-card h3{
-      margin:0 0 6px;
+      margin:0 0 5px;
       font-size:12.5px; font-weight:500;
       letter-spacing:.1em; text-transform:uppercase;
       color:var(--ice);
     }
-    .card p, .video-card p{ margin:0 0 12px; font-size:12.5px; color:var(--haze) }
+    .card p, .video-card p{
+      margin:0 0 14px; font-size:12.5px; color:var(--haze);
+      text-wrap:pretty;
+    }
     .video-card p{ margin-bottom:0 }
-    .meta{ display:flex; flex-wrap:wrap; gap:6px 16px }
+    .meta{ display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:auto }
     .link{
       font-size:10px; letter-spacing:.16em; text-transform:uppercase;
       color:rgba(238,241,246,.62);
@@ -227,10 +240,9 @@
     }
     .gallery-item img{
       width:100%; height:100%; display:block; object-fit:cover;
-      transition:transform 700ms var(--ease), opacity 300ms var(--ease);
-      opacity:.86;
+      transition:transform 700ms var(--ease);
     }
-    .gallery-item:hover img{ transform:scale(1.06); opacity:1 }
+    .gallery-item:hover img{ transform:scale(1.06) }
     .gallery-item::after{
       content:""; position:absolute; inset:0;
       border:1px solid transparent;
@@ -275,7 +287,7 @@
 
     /* ── footer ──────────────────────────────────── */
     footer{
-      margin-top:88px; padding-top:20px;
+      margin-top:76px; padding-top:20px;
       border-top:1px solid var(--wire);
       display:flex; flex-wrap:wrap; gap:8px 24px;
       font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
@@ -335,8 +347,8 @@
       <h1 class="title">Frank<br>Force</h1>
 
       <p class="lead">
-        Software engineer, 25 years in real-time graphics. I build engines, tools, and
-        programs small enough to fit in a tweet.
+        Software engineer, 25 years in real-time interactive software. Engines, graphics,
+        physics, simulation, and the tools that make it all easier to build and debug.
       </p>
 
       <nav class="nav" aria-label="Elsewhere">

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Frank Force | KilledByAPixel</title>
-  <meta name="description" content="Game developer and generative artist in Austin, TX. Creator of LittleJS and ZzFX. 1,000+ tiny JavaScript demos and award-winning optical illusion work." />
+  <title>Frank Force | Software Engineer</title>
+  <meta name="description" content="Software engineer in Austin, TX with 25 years building real-time interactive software. Creator of LittleJS and ZzFX. Deep experience in JavaScript, WebGL, graphics, and tools." />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#0a0a0f" />
 
@@ -16,445 +16,344 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --ink:#0a0a0f;
-      --magenta:#ff2e88;
-      --cyan:#4deaff;
-      --yellow:#ffe14a;
-      --cream:#f3e9d2;
-      --purple:#1a0d26;
-      --muted:#9d9a92;
-      --max:1040px;
-      --gap:18px;
+      --void:#05060a;
+      --glass:rgba(7,8,12,.78);
+      --deep:rgba(5,6,10,.88);
+      --ice:#eef1f6;
+      --haze:rgba(238,241,246,.72);
+      --wire:rgba(238,241,246,.18);
+      --hot:rgba(238,241,246,.55);
+      --max:1120px;
+      --gap:22px;
+      --ease:cubic-bezier(.2,.8,.25,1);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
-    html{scrollbar-color: var(--magenta) var(--ink);}
+    html{scrollbar-color:rgba(238,241,246,.3) var(--void); scroll-behavior:smooth}
     body{
       margin:0;
-      background:var(--ink);
-      color:var(--cream);
-      font: 15px/1.6 "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      background:var(--void);
+      color:var(--haze);
+      font:400 14px/1.7 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
       overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
     }
 
-    /* ── layered textures ─────────────────────────── */
+    ::selection{background:var(--ice); color:var(--void)}
+    :focus-visible{outline:1px solid var(--ice); outline-offset:3px}
+
+    /* ── background stack ─────────────────────────── */
     #bgcanvas{
       position:fixed; inset:0; width:100%; height:100%;
       z-index:0; display:block;
     }
-    .scanlines{
-      position:fixed; inset:0; pointer-events:none; z-index:2;
-      background:repeating-linear-gradient(
-        to bottom,
-        transparent 0, transparent 2px,
-        rgba(0,0,0,.16) 2px, rgba(0,0,0,.16) 3px
-      );
-      mix-blend-mode:multiply;
+    /* one layer does two jobs: hold the shader back so type stays
+       readable, and pull the corners down so the column reads first */
+    .veil{
+      position:fixed; inset:0; pointer-events:none; z-index:1;
+      background:
+        radial-gradient(120% 80% at 50% 0%, transparent 30%, rgba(5,6,10,.75) 100%),
+        linear-gradient(rgba(5,6,10,.6), rgba(5,6,10,.6));
     }
+
+    /* ── shader readout ──────────────────────────── */
+    .hud{
+      position:fixed; right:20px; bottom:18px; z-index:20;
+      display:flex; align-items:center; gap:12px;
+      padding:8px 12px;
+      font:400 10px/1 "JetBrains Mono", monospace;
+      letter-spacing:.16em;
+      color:var(--haze);
+      background:var(--deep);
+      border:1px solid var(--wire);
+      backdrop-filter:blur(8px);
+      cursor:pointer;
+      transition:border-color 180ms var(--ease), color 180ms var(--ease);
+    }
+    .hud:hover, .hud:focus-visible{ color:var(--ice); border-color:var(--hot) }
+    .hud .act{ color:rgba(238,241,246,.5) }
+    .hud:hover .act{ color:var(--ice) }
 
     /* ── layout ──────────────────────────────────── */
     .wrap{
       position:relative; z-index:5;
       max-width:var(--max); margin:0 auto;
-      padding:20px 18px 40px;
+      padding:72px 24px 40px;
     }
-
-    a{color:var(--cyan); text-decoration:none}
-    a:hover{color:var(--yellow)}
+    a{color:var(--ice); text-decoration:none}
 
     /* ── hero ────────────────────────────────────── */
-    .hero{
-      position:relative;
-      margin-top:8px;
-      padding:20px 18px 22px;
-      background:rgba(10,10,15,.7);
-      border:1px solid var(--magenta);
-      box-shadow: 6px 6px 0 var(--magenta);
-    }
-    .hero::before{
-      content:""; position:absolute; inset:2px;
-      border:1px solid var(--cyan); pointer-events:none;
-    }
-    .colorbars{
-      height:10px;
-      margin-bottom:18px;
-      background:linear-gradient(to right,
-        var(--cream)   0 14.28%,
-        var(--yellow)  0 28.57%,
-        var(--cyan)    0 42.85%,
-        #83f1ff        0 57.14%,
-        var(--magenta) 0 71.42%,
-        #ff6aa0        0 85.71%,
-        var(--purple)  0 100%);
-    }
+    /* the hero sits on the bare shader, so its type carries its own
+       shadow instead of a panel — invisible on dark, saves it on bright */
+    .hero{ margin-bottom:96px; text-shadow:0 2px 18px rgba(5,6,10,.9) }
 
-    .hero-body{
-      display:grid;
-      grid-template-columns:auto 1fr;
-      gap:22px; align-items:center;
-    }
-    .avatar-frame{
-      width:112px; height:112px; flex-shrink:0;
-      position:relative;
-      padding:4px;
-      background:var(--magenta);
-      box-shadow:
-        0 0 0 2px var(--ink),
-        0 0 0 3px var(--cyan);
-    }
-    .avatar-frame img{
-      width:100%; height:100%; display:block;
-      object-fit:cover;
-      image-rendering:pixelated;
-      filter: contrast(1.15) saturate(.5);
-    }
-
-    .nameblock{min-width:0}
     .title{
-      margin:0; padding:0;
-      font-family:"Silkscreen", monospace; font-weight:700;
-      font-size:clamp(32px, 6.5vw, 56px);
-      line-height:1;
-      color:var(--magenta);
-      text-shadow: 4px 4px 0 var(--cyan);
-      letter-spacing:1px;
-      cursor:default;
-      user-select:none;
-    }
-    .title:hover{
-      animation: glitch 80ms steps(1) 2;
-    }
-    @keyframes glitch{
-      0%   { transform: translate(0,0); text-shadow: 4px 4px 0 var(--cyan); }
-      33%  { transform: translate(2px,-1px); text-shadow: -2px 0 0 var(--magenta), 2px 0 0 var(--cyan); }
-      66%  { transform: translate(-2px,1px); text-shadow: 2px 0 0 var(--yellow), -2px 0 0 var(--cyan); }
-      100% { transform: translate(0,0); text-shadow: 4px 4px 0 var(--cyan); }
-    }
-    .subtitle{
-      margin:14px 0 0;
-      color:var(--cream);
-      font-size:13px;
-      letter-spacing:.2px;
-    }
-    .subtitle .prompt{color:var(--magenta)}
-    .subtitle .slash{color:var(--cyan)}
-    .cursor{
-      display:inline-block; width:.6em; background:var(--cream);
-      animation: blink 1s steps(1) infinite; color:transparent;
-      margin-left:2px;
-    }
-    @keyframes blink{ 50%{ opacity:0 } }
-
-    /* ── nav ─────────────────────────────────────── */
-    .nav{
-      margin-top:20px;
-      display:flex; flex-wrap:wrap; gap:8px;
-    }
-    .nav-btn{
-      font-family:"Silkscreen", monospace; font-size:12px;
-      padding:9px 10px;
-      color:var(--cream);
-      background:transparent;
-      border:1px solid var(--cyan);
+      margin:0;
+      font-family:"Archivo", "Helvetica Neue", Arial, sans-serif;
+      font-weight:800;
+      font-variation-settings:'wdth' 118;
+      font-size:clamp(46px, 12.4vw, 132px);
+      line-height:.84;
+      letter-spacing:-.035em;
       text-transform:uppercase;
-      letter-spacing:.5px;
-      transition: background 0s steps(1), color 0s steps(1), border-color 0s steps(1);
+      color:var(--ice);
+      word-break:break-word;
     }
-    .nav-btn:hover, .nav-btn:focus-visible{
-      background:var(--magenta); color:var(--ink);
-      border-color:var(--magenta);
-      outline:none;
+    /* the one orchestrated moment: the name settles into place on load */
+    .title{
+      opacity:0;
+      letter-spacing:.26em;
+      transition:opacity 700ms var(--ease), letter-spacing 1100ms var(--ease);
+    }
+    body.loaded .title{ opacity:1; letter-spacing:-.035em }
+
+    .lead{
+      margin:26px 0 0;
+      max-width:48ch;
+      font-size:clamp(14px, 1.5vw, 16.5px);
+      line-height:1.65;
+      color:var(--ice);
+      font-weight:300;
     }
 
-    /* ── section titles ──────────────────────────── */
-    .section{margin-top:42px}
-    .section-title{
-      font-family:"Silkscreen", monospace; font-weight:400;
-      color:var(--magenta);
-      font-size:18px;
-      text-transform:uppercase;
-      letter-spacing:.5px;
-      margin:0 0 18px;
-      display:flex; align-items:center; gap:14px;
-      padding-bottom:6px;
+    .nav{ margin-top:32px; display:flex; flex-wrap:wrap; gap:8px }
+    .nav a{
+      padding:9px 13px;
+      font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--haze);
+      border:1px solid var(--wire);
+      background:var(--glass);
+      transition:color 180ms var(--ease), border-color 180ms var(--ease), background 180ms var(--ease);
     }
-    .section-title::after{
-      content:""; flex:1; height:1px;
-      background:var(--cyan);
-      align-self:center;
+    .nav a:hover, .nav a:focus-visible{
+      color:var(--ice); border-color:var(--hot);
+      background:rgba(238,241,246,.07);
     }
+
+    /* ── section heads ───────────────────────────── */
+    .section{ margin-top:88px }
+    .shead{
+      display:flex; align-items:center; gap:18px;
+      margin:0 0 26px;
+      font-size:11px; font-weight:500;
+      letter-spacing:.26em; text-transform:uppercase;
+      color:var(--ice);
+    }
+    .shead::after{
+      content:""; order:1; flex:1; height:1px;
+      background:var(--wire);
+    }
+    .shead .n{
+      order:2;
+      font-size:10.5px; letter-spacing:.14em;
+      color:rgba(238,241,246,.5);
+      font-variant-numeric:tabular-nums;
+    }
+
     /* ── about ───────────────────────────────────── */
-    .about-prose{
-      max-width:680px;
-      font-size:14px;
+    .about{
+      max-width:74ch;
+      padding:26px 28px;
+      background:var(--glass);
+      border:1px solid var(--wire);
+      backdrop-filter:blur(10px);
     }
-    .about-prose p{margin:0 0 14px}
-    .about-prose .tag{
-      background:var(--cyan); color:var(--ink);
-      padding:1px 5px;
-      font-weight:500;
+    .about p{ margin:0 0 16px; font-size:13.5px; line-height:1.85 }
+    .about p:last-child{ margin-bottom:0 }
+    .about strong{
+      color:var(--ice); font-weight:500;
     }
-    .small{color:var(--muted); font-size:13px}
+    .about .tag{ color:var(--ice); font-weight:500 }
+    .small{ font-size:12.5px; color:rgba(238,241,246,.58) }
 
-    /* ── card grid ──────────────────────────────── */
-    .grid{
-      display:grid; gap:var(--gap);
-      grid-template-columns:repeat(12, 1fr);
+    /* ── cards ───────────────────────────────────── */
+    .grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(12,1fr) }
+    .card, .video-card{
+      grid-column:span 6;
+      padding:14px 14px 16px;
+      background:var(--glass);
+      border:1px solid var(--wire);
+      transition:border-color 200ms var(--ease), transform 300ms var(--ease), background 200ms var(--ease);
     }
-    .card{
-      grid-column: span 6;
-      position:relative;
-      background:var(--ink);
-      padding:14px 14px 12px;
-      border:1px solid var(--magenta);
-      box-shadow:
-        0 0 0 2px var(--ink),
-        0 0 0 3px var(--cyan),
-        5px 5px 0 var(--magenta);
-      transition: box-shadow 200ms steps(3), transform 160ms steps(2);
+    .card:hover, .video-card:hover{
+      border-color:var(--hot);
+      background:var(--deep);
+      transform:translateY(-3px);
     }
-    .card:hover{
-      transform: translate(-2px,-2px);
-      box-shadow:
-        0 0 0 2px var(--ink),
-        0 0 0 3px var(--yellow),
-        7px 7px 0 var(--magenta);
-    }
+    .card figure{ margin:0 0 14px; overflow:hidden; line-height:0 }
     .card img{
       width:100%; display:block;
-      margin-bottom:10px;
-      image-rendering:pixelated;
       cursor:pointer;
-      transition: transform 140ms cubic-bezier(.2,.7,.4,1);
-      transform-style: preserve-3d;
-      border:1px solid var(--cyan);
+      filter:saturate(.85) contrast(1.02);
+      transform:scale(1.001);
+      transition:transform 600ms var(--ease), filter 400ms var(--ease);
     }
-    .card h3{
-      font-family:"Silkscreen", monospace; font-weight:400;
-      font-size:14px; margin:2px 0 4px;
-      color:var(--cream);
-      letter-spacing:.5px;
-      text-transform:uppercase;
+    .card:hover img{ transform:scale(1.04); filter:none }
+    .card h3, .video-card h3{
+      margin:0 0 6px;
+      font-size:12.5px; font-weight:500;
+      letter-spacing:.1em; text-transform:uppercase;
+      color:var(--ice);
     }
-    .card p{
-      margin:0 0 10px;
-      font-size:13px;
-      color:var(--muted);
+    .card p, .video-card p{ margin:0 0 12px; font-size:12.5px; color:var(--haze) }
+    .video-card p{ margin-bottom:0 }
+    .meta{ display:flex; flex-wrap:wrap; gap:6px 16px }
+    .link{
+      font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+      color:rgba(238,241,246,.62);
+      padding-bottom:2px;
+      border-bottom:1px solid var(--wire);
+      transition:color 160ms var(--ease), border-color 160ms var(--ease);
     }
-    .meta{display:flex; flex-wrap:wrap; gap:6px}
-    .chip{
-      font-family:"Silkscreen", monospace; font-size:11px;
-      padding:4px 7px;
-      color:var(--cream);
-      border:1px solid var(--cyan);
-      background:transparent;
-      text-transform:uppercase;
-      letter-spacing:.5px;
-      transition: background 0s steps(1), color 0s steps(1), border-color 0s steps(1);
-    }
-    .chip:hover, .chip:focus-visible{
-      background:var(--yellow); color:var(--ink);
-      border-color:var(--yellow);
-      outline:none;
-    }
+    .link:hover, .link:focus-visible{ color:var(--ice); border-color:var(--ice) }
 
     /* ── videos ──────────────────────────────────── */
-    .video-card{
-      grid-column: span 6;
-      position:relative;
-      padding:14px 14px 12px;
-      background:var(--ink);
-      border:1px solid var(--magenta);
-      box-shadow:
-        0 0 0 2px var(--ink),
-        0 0 0 3px var(--cyan),
-        5px 5px 0 var(--magenta);
-    }
     .video-card iframe{
       width:100%; aspect-ratio:16/9; display:block;
-      border:1px solid var(--cyan);
-      padding:2px;
-      margin-bottom:10px;
+      border:0; margin-bottom:14px;
       background:#000;
     }
-    .video-card h3{
-      font-family:"Silkscreen", monospace; font-weight:400;
-      font-size:13px; margin:2px 0 4px;
-      color:var(--cream);
-      text-transform:uppercase;
-    }
-    .video-card p{margin:0; color:var(--muted); font-size:13px}
 
     /* ── gallery ─────────────────────────────────── */
-    .gallery{
-      display:grid;
-      grid-template-columns:repeat(4, 1fr);
-      gap:3px;
-    }
+    .gallery{ display:grid; grid-template-columns:repeat(4,1fr); gap:2px }
     .gallery-item{
-      aspect-ratio:1;
-      position:relative;
-      cursor:pointer;
-      overflow:hidden;
-      outline:1px solid var(--cyan);
-      outline-offset:-1px;
-      transition: transform 120ms steps(2), outline-color 120ms steps(1);
+      aspect-ratio:1; position:relative; cursor:pointer; overflow:hidden;
+      line-height:0;
     }
-    .gallery-item:hover{
-      transform: translate(0,-3px);
-      outline:2px solid var(--magenta);
-      outline-offset:-2px;
-      z-index:2;
-    }
-    .gallery-item::after{
-      content:""; position:absolute; right:0; bottom:0;
-      width:0; height:0;
-      border-right:14px solid var(--yellow);
-      border-top:14px solid transparent;
-      opacity:0;
-      transition: opacity 0s steps(1) 60ms;
-    }
-    .gallery-item:hover::after{ opacity:1 }
     .gallery-item img{
-      width:100%; height:100%; display:block;
-      object-fit:cover;
-      image-rendering:pixelated;
+      width:100%; height:100%; display:block; object-fit:cover;
+      transition:transform 700ms var(--ease), opacity 300ms var(--ease);
+      opacity:.86;
     }
+    .gallery-item:hover img{ transform:scale(1.06); opacity:1 }
+    .gallery-item::after{
+      content:""; position:absolute; inset:0;
+      border:1px solid transparent;
+      transition:border-color 200ms var(--ease);
+    }
+    .gallery-item:hover::after{ border-color:var(--ice) }
+    .gallery ~ .small{ display:block; margin-top:16px }
+    .gallery ~ .small a{ border-bottom:1px solid var(--wire) }
+    .gallery ~ .small a:hover{ border-color:var(--ice) }
 
     /* ── lightbox ─────────────────────────────────── */
     .lightbox{
       display:none; position:fixed; inset:0; z-index:1000;
-      background:rgba(10,10,15,.94);
+      background:rgba(5,6,10,.92);
+      backdrop-filter:blur(14px);
       align-items:center; justify-content:center;
-      cursor:pointer; padding:24px;
-      flex-direction:column; gap:12px;
+      cursor:pointer; padding:32px;
+      flex-direction:column; gap:18px;
     }
-    .lightbox.active{display:flex}
+    .lightbox.active{ display:flex }
     .lightbox img{
-      max-width:90vw; max-height:78vh;
+      max-width:88vw; max-height:76vh;
       cursor:default;
-      border:4px solid var(--magenta);
-      box-shadow: 8px 8px 0 var(--cyan);
-      image-rendering:pixelated;
+      border:1px solid var(--hot);
     }
     .lightbox-caption{
-      font-family:"Silkscreen", monospace;
-      font-size:12px; color:var(--cream);
-      text-align:center; letter-spacing:.5px;
-      z-index:1;
+      font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--haze); text-align:center;
     }
-    .lightbox-caption .hint{color:var(--muted); margin-left:12px}
+    .lightbox-caption .hint{ color:rgba(238,241,246,.45); margin-left:16px }
     .lightbox-nav{
       position:absolute; top:50%; transform:translateY(-50%);
-      background:transparent; border:2px solid var(--cyan); color:var(--cyan);
-      font-family:"Silkscreen", monospace;
-      font-size:20px; width:48px; height:48px;
-      cursor:pointer; z-index:2;
+      background:transparent; border:1px solid var(--wire); color:var(--haze);
+      font:400 14px/1 "JetBrains Mono", monospace;
+      width:44px; height:44px; cursor:pointer; z-index:2;
       display:flex; align-items:center; justify-content:center;
-      transition: background 0s steps(1), color 0s steps(1), border-color 0s steps(1);
+      transition:color 180ms var(--ease), border-color 180ms var(--ease);
     }
-    .lightbox-nav:hover{
-      background:var(--yellow); color:var(--ink); border-color:var(--yellow);
-    }
-    .lightbox-prev{left:20px}
-    .lightbox-next{right:20px}
+    .lightbox-nav:hover{ color:var(--ice); border-color:var(--ice) }
+    .lightbox-prev{ left:24px }
+    .lightbox-next{ right:24px }
 
     /* ── footer ──────────────────────────────────── */
     footer{
-      margin-top:44px; padding-top:16px;
-      border-top:1px solid var(--cyan);
-      font-size:12px; color:var(--muted);
-      text-align:left;
-      letter-spacing:.3px;
+      margin-top:88px; padding-top:20px;
+      border-top:1px solid var(--wire);
+      display:flex; flex-wrap:wrap; gap:8px 24px;
+      font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+      color:rgba(238,241,246,.6);
     }
-    footer a{color:var(--cyan)}
-    footer a:hover{color:var(--yellow)}
-    footer b{color:var(--magenta); font-weight:400}
-    footer .slash{color:var(--magenta); margin:0 10px}
+    footer a{ color:var(--haze) }
+    footer a:hover{ color:var(--ice) }
 
     /* ── responsive ─────────────────────────────── */
-    @media (max-width: 760px){
-      .hero-body{ grid-template-columns:1fr; text-align:center; justify-items:center }
-      .avatar-frame{ width:96px; height:96px }
-      .card, .video-card{ grid-column: span 12 }
-      .gallery{ grid-template-columns:repeat(3, 1fr) }
-      .nav{ justify-content:center }
-      .section-title{ font-size:15px }
-      .title{ text-shadow: 3px 3px 0 var(--cyan) }
-    }
-
-    /* ── reduced motion ─────────────────────────── */
-    @media (prefers-reduced-motion: reduce){
-      *, *::before, *::after{
-        animation-duration:.001ms !important;
-        animation-iteration-count:1 !important;
-        transition-duration:.001ms !important;
-      }
-      .title:hover{ animation:none }
+    @media (max-width:860px){
+      .card, .video-card{ grid-column:span 12 }
+      .gallery{ grid-template-columns:repeat(3,1fr) }
+      .wrap{ padding-top:36px }
+      .hero{ margin-bottom:64px }
+      .section{ margin-top:64px }
+      .hud{ display:none }
     }
 
     /* ── load reveal ─────────────────────────────── */
-    .reveal{ opacity:0; transform: translateY(8px) }
+    .reveal{ opacity:0; transform:translateY(14px) }
     body.loaded .reveal{
       opacity:1; transform:none;
-      transition: opacity 240ms steps(4), transform 240ms steps(4);
+      transition:opacity 700ms var(--ease), transform 700ms var(--ease);
     }
-    body.loaded .reveal[data-i="1"]{ transition-delay:.20s }
-    body.loaded .reveal[data-i="2"]{ transition-delay:.30s }
-    body.loaded .reveal[data-i="3"]{ transition-delay:.40s }
-    body.loaded .reveal[data-i="4"]{ transition-delay:.50s }
-    body.loaded .reveal[data-i="5"]{ transition-delay:.60s }
-    body.loaded .reveal[data-i="6"]{ transition-delay:.70s }
+    body.loaded .reveal[data-i="2"]{ transition-delay:.10s }
+    body.loaded .reveal[data-i="3"]{ transition-delay:.16s }
+    body.loaded .reveal[data-i="4"]{ transition-delay:.22s }
+    body.loaded .reveal[data-i="5"]{ transition-delay:.28s }
+    body.loaded .reveal[data-i="6"]{ transition-delay:.34s }
 
     @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        animation-duration:.001ms !important;
+        transition-duration:.001ms !important;
+      }
       .reveal{ opacity:1; transform:none }
+      .title{ opacity:1; letter-spacing:-.035em }
+      html{ scroll-behavior:auto }
     }
   </style>
+  <noscript><style>
+    .reveal, .title{ opacity:1 !important; transform:none !important; letter-spacing:-.035em !important }
+  </style></noscript>
 </head>
 
 <body>
   <canvas id="bgcanvas" aria-hidden="true"></canvas>
-  <div class="scanlines" aria-hidden="true"></div>
+  <div class="veil" aria-hidden="true"></div>
+
+  <button class="hud" id="bg-hud" type="button" title="Load a different background shader">
+    <span id="bg-readout">SHADER —— / ——</span>
+    <span class="act">RESHUFFLE</span>
+  </button>
 
   <div class="wrap">
-    <header class="hero reveal" data-i="1">
-      <div class="colorbars" aria-hidden="true"></div>
+    <header class="hero">
+      <h1 class="title">Frank<br>Force</h1>
 
-      <div class="hero-body">
-        <div class="avatar-frame">
-          <img src="images/profile.jpg" alt="Frank Force">
-        </div>
-        <div class="nameblock">
-          <h1 class="title" title="FRANK FORCE">FRANK FORCE</h1>
-          <p class="subtitle">
-            <span class="prompt">&gt;</span> GAME DEV <span class="slash">//</span>
-            GEN ART <span class="slash">//</span>
-            TINY CODE <span class="slash">//</span>
-            AUSTIN, TX<span class="cursor">_</span>
-          </p>
-        </div>
-      </div>
+      <p class="lead">
+        Software engineer, 25 years in real-time graphics. I build engines, tools, and
+        programs small enough to fit in a tweet.
+      </p>
 
-      <nav class="nav" aria-label="Social links">
-        <a class="nav-btn" href="https://github.com/KilledByAPixel">[GITHUB]</a>
-        <a class="nav-btn" href="https://frankforce.com/">[BLOG]</a>
-        <a class="nav-btn" href="https://bsky.app/profile/frankforce.bsky.social">[BSKY]</a>
-        <a class="nav-btn" href="https://twitter.com/KilledByAPixel">[TWITTER]</a>
-        <a class="nav-btn" href="https://killedbyapixel.itch.io/">[ITCH]</a>
-        <a class="nav-btn" href="https://killedbyapixel.newgrounds.com/games">[NEWGROUNDS]</a>
+      <nav class="nav" aria-label="Elsewhere">
+        <a href="https://github.com/KilledByAPixel">GitHub</a>
+        <a href="https://frankforce.com/">Blog</a>
+        <a href="https://bsky.app/profile/frankforce.bsky.social">Bluesky</a>
+        <a href="https://twitter.com/KilledByAPixel">Twitter</a>
+        <a href="https://killedbyapixel.itch.io/">itch.io</a>
+        <a href="https://killedbyapixel.newgrounds.com/games">Newgrounds</a>
       </nav>
     </header>
 
     <section class="section reveal" data-i="2">
-      <h2 class="section-title">// ABOUT</h2>
-      <div class="about-prose">
+      <h2 class="shead"><span>About</span></h2>
+      <div class="about">
         <p>
-          Hi, I'm Frank Force. I'm an engineer and designer with 25 years of professional experience shipping real-time interactive software. From AAA titles like DOOM, Starhawk, and Red Faction: Guerrilla to an award-winning independent catalog. I've held key roles at <span class="tag">Certain Affinity</span>, <span class="tag">Rooster Teeth</span>, <span class="tag">Midway Games</span>, <span class="tag">Volition</span>, and several other studios.
+          Hi, I'm Frank Force. I'm a programmer with 25 years of professional experience shipping real-time interactive software. From AAA titles like DOOM, Starhawk, and Red Faction: Guerrilla to an award-winning independent catalog. I've held key roles at <span class="tag">Certain Affinity</span>, <span class="tag">Rooster Teeth</span>, <span class="tag">Midway Games</span>, <span class="tag">Volition</span>, and several other studios.
         </p>
         <p>
           I created LittleJS, an open source HTML5 game engine with over 4,000 stars on GitHub, and ZzFX, a procedural sound synthesizer used in thousands of web games. I have deep expertise in JavaScript, WebGL, physics, procedural generation, and AI-assisted development. I won Best Illusion of the Year with my Dual Axis Illusion and have taken top prizes in multiple international game jams. Just for fun, I've written over 1,000 super tiny programs that do all sorts of cool stuff.
@@ -466,147 +365,147 @@
     </section>
 
     <section class="section reveal" data-i="3">
-      <h2 class="section-title">// FEATURED_PROJECTS</h2>
+      <h2 class="shead"><span>Projects</span><span class="n"></span></h2>
       <div class="grid cards">
         <article class="card" data-link="https://github.com/KilledByAPixel/LittleJS">
-          <img src="images/LittleJSExamples.jpg" alt="LittleJS Engine">
+          <figure><img src="images/LittleJSExamples.jpg" alt="LittleJS Engine"></figure>
           <h3>LITTLEJS ENGINE</h3>
           <p>Tiny, fast open source HTML5 game engine.</p>
           <div class="meta">
-            <a class="chip" href="https://github.com/KilledByAPixel/LittleJS">[REPO]</a>
-            <a class="chip" href="https://killedbyapixel.github.io/LittleJS/examples/">[DEMOS]</a>
-            <a class="chip" href="https://github.com/KilledByAPixel/LittleJS-AI">[AI]</a>
-            <a class="chip" href="https://youtu.be/chuBzGjv7Ms?si=CRFy3BPq5ZEtqhqf">[TRAILER]</a>
+            <a class="link" href="https://github.com/KilledByAPixel/LittleJS">Repo</a>
+            <a class="link" href="https://killedbyapixel.github.io/LittleJS/examples/">Demos</a>
+            <a class="link" href="https://github.com/KilledByAPixel/LittleJS-AI">Ai</a>
+            <a class="link" href="https://youtu.be/chuBzGjv7Ms?si=CRFy3BPq5ZEtqhqf">Trailer</a>
           </div>
         </article>
 
         <article class="card" data-link="https://killedbyapixel.github.io/GatelessGate/">
-          <img src="images/GatelessGate.jpg" alt="The Gateless Gate 3D">
+          <figure><img src="images/GatelessGate.jpg" alt="The Gateless Gate 3D"></figure>
           <h3>THE GATELESS GATE 3D</h3>
           <p>Interactive 3D edition of a 13th century Zen book.</p>
           <div class="meta">
-            <a class="chip" href="https://github.com/KilledByAPixel/GatelessGate">[REPO]</a>
-            <a class="chip" href="https://killedbyapixel.github.io/GatelessGate/">[OPEN]</a>
+            <a class="link" href="https://github.com/KilledByAPixel/GatelessGate">Repo</a>
+            <a class="link" href="https://killedbyapixel.github.io/GatelessGate/">Open</a>
           </div>
         </article>
 
         <article class="card" data-link="https://github.com/KilledByAPixel/Cosmodial">
-          <img src="images/CosmodialSkyAtlas.jpg" alt="Cosmodial">
+          <figure><img src="images/CosmodialSkyAtlas.jpg" alt="Cosmodial"></figure>
           <h3>COSMODIAL SKY ATLAS</h3>
           <p>Explore the night sky from your web browser.</p>
           <div class="meta">
-            <a class="chip" href="https://github.com/KilledByAPixel/Cosmodial">[REPO]</a>
-            <a class="chip" href="https://cosmodial.3d2k.com">[OPEN]</a>
+            <a class="link" href="https://github.com/KilledByAPixel/Cosmodial">Repo</a>
+            <a class="link" href="https://cosmodial.3d2k.com">Open</a>
           </div>
         </article>
 
         <article class="card" data-link="https://killedbyapixel.github.io/LittleJSArcade/">
-          <img src="images/LittleJSArcadeGames.jpg" alt="LittleJS Arcade">
+          <figure><img src="images/LittleJSArcadeGames.jpg" alt="LittleJS Arcade"></figure>
           <h3>LITTLEJS ARCADE</h3>
           <p>Collection of mini games built with LittleJS.</p>
           <div class="meta">
-            <a class="chip" href="https://github.com/KilledByAPixel/LittleJSArcade">[REPO]</a>
-            <a class="chip" href="https://killedbyapixel.github.io/LittleJSArcade/">[PLAY]</a>
+            <a class="link" href="https://github.com/KilledByAPixel/LittleJSArcade">Repo</a>
+            <a class="link" href="https://killedbyapixel.github.io/LittleJSArcade/">Play</a>
           </div>
         </article>
 
         <article class="card" data-link="https://killedbyapixel.github.io/ZzFX/">
-          <img src="images/ZzFX.jpg" alt="ZzFX Sound Effect Generator">
+          <figure><img src="images/ZzFX.jpg" alt="ZzFX Sound Effect Generator"></figure>
           <h3>ZZFX SOUND GENERATOR</h3>
           <p>Open source JavaScript sound FX system and editor.</p>
           <div class="meta">
-            <a class="chip" href="https://github.com/KilledByAPixel/ZzFX">[REPO]</a>
-            <a class="chip" href="https://killedbyapixel.github.io/ZzFX/">[OPEN]</a>
-            <a class="chip" href="https://codepen.io/KilledByAPixel/full/BaowKzv">[BOARD]</a>
+            <a class="link" href="https://github.com/KilledByAPixel/ZzFX">Repo</a>
+            <a class="link" href="https://killedbyapixel.github.io/ZzFX/">Open</a>
+            <a class="link" href="https://codepen.io/KilledByAPixel/full/BaowKzv">Board</a>
           </div>
         </article>
 
         <article class="card" data-link="https://github.com/KilledByAPixel/TinyCode">
-          <img src="images/Dweets.jpg" alt="Tiny JavaScript Demos">
+          <figure><img src="images/Dweets.jpg" alt="Tiny JavaScript Demos"></figure>
           <h3>TINY CODE EXPERIMENTS</h3>
           <p>Programs with very small source code.</p>
           <div class="meta">
-            <a class="chip" href="https://github.com/KilledByAPixel/TinyCode">[REPO]</a>
-            <a class="chip" href="https://www.dwitter.net/u/KilledByAPixel/top">[DWEETS]</a>
-            <a class="chip" href="https://www.pouet.net/user.php?who=102368">[POUET]</a>
+            <a class="link" href="https://github.com/KilledByAPixel/TinyCode">Repo</a>
+            <a class="link" href="https://www.dwitter.net/u/KilledByAPixel/top">Dweets</a>
+            <a class="link" href="https://www.pouet.net/user.php?who=102368">Pouet</a>
           </div>
         </article>
       </div>
     </section>
 
     <section class="section reveal" data-i="4">
-      <h2 class="section-title">// FEATURED_GAMES</h2>
+      <h2 class="shead"><span>Games</span><span class="n"></span></h2>
       <div class="grid cards">
         <article class="card" data-link="https://killedbyapixel.itch.io/dr1v3n-wild">
-          <img src="images/DrivenWild.jpg" alt="Driven Wild">
+          <figure><img src="images/DrivenWild.jpg" alt="Driven Wild"></figure>
           <h3>DRIVEN WILD</h3>
           <p>Procedural arcade driving.</p>
           <div class="meta">
-            <a class="chip" href="https://killedbyapixel.itch.io/dr1v3n-wild">[PLAY]</a>
-            <a class="chip" href="https://github.com/KilledByAPixel/Drive13K">[SOURCE]</a>
-            <a class="chip" href="https://youtu.be/67j0Z9wJhvo?si=kHp3qPfcjhRVn-HO">[TRAILER]</a>
+            <a class="link" href="https://killedbyapixel.itch.io/dr1v3n-wild">Play</a>
+            <a class="link" href="https://github.com/KilledByAPixel/Drive13K">Source</a>
+            <a class="link" href="https://youtu.be/67j0Z9wJhvo?si=kHp3qPfcjhRVn-HO">Trailer</a>
           </div>
         </article>
 
         <article class="card" data-link="https://www.newgrounds.com/portal/view/819609">
-          <img src="images/SpaceHuggers.png" alt="Space Huggers">
+          <figure><img src="images/SpaceHuggers.png" alt="Space Huggers"></figure>
           <h3>SPACE HUGGERS</h3>
           <p>Run-and-gun platformer roguelike.</p>
           <div class="meta">
-            <a class="chip" href="https://www.newgrounds.com/portal/view/819609">[PLAY]</a>
-            <a class="chip" href="https://frankforce.com/space-huggers-how-i-made-a-game-in-13-kilobytes/">[POSTMORTEM]</a>
-            <a class="chip" href="https://github.com/KilledByAPixel/SpaceHuggers">[SOURCE]</a>
-            <a class="chip" href="https://youtu.be/6VXrnk18Z4s?si=wMCN_YYHoh53Ys_J">[TRAILER]</a>
+            <a class="link" href="https://www.newgrounds.com/portal/view/819609">Play</a>
+            <a class="link" href="https://frankforce.com/space-huggers-how-i-made-a-game-in-13-kilobytes/">Postmortem</a>
+            <a class="link" href="https://github.com/KilledByAPixel/SpaceHuggers">Source</a>
+            <a class="link" href="https://youtu.be/6VXrnk18Z4s?si=wMCN_YYHoh53Ys_J">Trailer</a>
           </div>
         </article>
 
         <article class="card" data-link="https://killedbyapixel.itch.io/l1ttl3-paws">
-          <img src="images/LittlePaws.jpg" alt="L1TTL3 PAWS">
+          <figure><img src="images/LittlePaws.jpg" alt="L1TTL3 PAWS"></figure>
           <h3>L1TTL3 PAWS</h3>
           <p>Physics based cat sliding game.</p>
           <div class="meta">
-            <a class="chip" href="https://killedbyapixel.itch.io/l1ttl3-paws">[PLAY]</a>
-            <a class="chip" href="https://github.com/KilledByAPixel/JS13K2025">[SOURCE]</a>
-            <a class="chip" href="https://youtu.be/leeqG-vjBXs?si=8MByMNL2ZXN0XJUf">[TRAILER]</a>
+            <a class="link" href="https://killedbyapixel.itch.io/l1ttl3-paws">Play</a>
+            <a class="link" href="https://github.com/KilledByAPixel/JS13K2025">Source</a>
+            <a class="link" href="https://youtu.be/leeqG-vjBXs?si=8MByMNL2ZXN0XJUf">Trailer</a>
           </div>
         </article>
 
         <article class="card" data-link="https://www.newgrounds.com/portal/view/755171">
-          <img src="images/BounceBack.png" alt="Bounce Back">
+          <figure><img src="images/BounceBack.png" alt="Bounce Back"></figure>
           <h3>BOUNCE BACK</h3>
           <p>Retro boomerang roguelite adventure.</p>
           <div class="meta">
-            <a class="chip" href="https://www.newgrounds.com/portal/view/755171">[PLAY]</a>
-            <a class="chip" href="https://frankforce.com/bounce-back-postmortem/">[POSTMORTEM]</a>
-            <a class="chip" href="https://github.com/KilledByAPixel/BounceBack">[SOURCE]</a>
-            <a class="chip" href="https://youtu.be/XjhdNodZyL4?si=hYpl9D7b6RRQ4_72">[TRAILER]</a>
+            <a class="link" href="https://www.newgrounds.com/portal/view/755171">Play</a>
+            <a class="link" href="https://frankforce.com/bounce-back-postmortem/">Postmortem</a>
+            <a class="link" href="https://github.com/KilledByAPixel/BounceBack">Source</a>
+            <a class="link" href="https://youtu.be/XjhdNodZyL4?si=hYpl9D7b6RRQ4_72">Trailer</a>
           </div>
         </article>
 
         <article class="card" data-link="https://www.newgrounds.com/portal/view/747570">
-          <img src="images/BogusRoads.png" alt="Bogus Roads">
+          <figure><img src="images/BogusRoads.png" alt="Bogus Roads"></figure>
           <h3>BOGUS ROADS</h3>
           <p>Lowrez retrowave racing.</p>
           <div class="meta">
-            <a class="chip" href="https://www.newgrounds.com/portal/view/747570">[PLAY]</a>
-            <a class="chip" href="https://youtu.be/txcH9sB9UTM?si=BDknsy2YBVv9LigA">[TRAILER]</a>
+            <a class="link" href="https://www.newgrounds.com/portal/view/747570">Play</a>
+            <a class="link" href="https://youtu.be/txcH9sB9UTM?si=BDknsy2YBVv9LigA">Trailer</a>
           </div>
         </article>
 
         <article class="card" data-link="https://undergrowth.squidband.uk/">
-          <img src="images/Undergrowth.jpg" alt="Undergrowth">
+          <figure><img src="images/Undergrowth.jpg" alt="Undergrowth"></figure>
           <h3>UNDERGROWTH / SQUID</h3>
           <p>Promo game for the band Squid.</p>
           <div class="meta">
-            <a class="chip" href="https://undergrowth.squidband.uk/">[PLAY]</a>
-            <a class="chip" href="https://youtu.be/U2V1L11j_cs?si=WxPllEg1gFd2K1Vt">[TRAILER]</a>
+            <a class="link" href="https://undergrowth.squidband.uk/">Play</a>
+            <a class="link" href="https://youtu.be/U2V1L11j_cs?si=WxPllEg1gFd2K1Vt">Trailer</a>
           </div>
         </article>
       </div>
     </section>
 
     <section class="section reveal" data-i="5">
-      <h2 class="section-title">// VIDEOS</h2>
+      <h2 class="shead"><span>Video</span><span class="n"></span></h2>
       <div class="grid">
         <article class="video-card">
           <iframe src="https://www.youtube.com/embed/CagnRwPkw_M" loading="lazy" allowfullscreen title="JavaScript Haikus"></iframe>
@@ -635,7 +534,7 @@
     </section>
 
     <section class="section reveal" data-i="6">
-      <h2 class="section-title">// GENERATIVE_ART</h2>
+      <h2 class="shead"><span>Artwork</span><span class="n"></span></h2>
       <div class="gallery">
         <div class="gallery-item" onclick="openLightbox(this)"><img src="art/NeonPlotComics.jpg" alt="Neon Plot Comics"></div>
         <div class="gallery-item" onclick="openLightbox(this)"><img src="art/PlotComics.jpg" alt="Plot Comics"></div>
@@ -675,13 +574,9 @@
     </div>
 
     <footer>
-      <span>© <span id="y"></span> KILLEDBYAPIXEL</span>
-      <span class="slash">//</span>
-      <span>MADE BY HAND IN AUSTIN, TX</span>
-      <span class="slash">//</span>
-      <a href="https://github.com/KilledByAPixel/KilledByAPixel.github.io">[VIEW_SOURCE]</a>
-      <span class="slash" data-kill hidden>//</span>
-      <span data-kill hidden>PIXELS_KILLED: <b id="killcount">0</b></span>
+      <span>&copy; <span id="y"></span> Frank Force</span>
+      <span>Made by hand in Austin, TX</span>
+      <a href="https://github.com/KilledByAPixel/KilledByAPixel.github.io">View source</a>
     </footer>
   </div>
 
@@ -697,196 +592,18 @@
       document.body.classList.add('loaded');
     });
 
-    /* ── background canvas: pixel starfield ──
-       mini-game: stars dodge the cursor, click one to kill it */
-    (() => {
-      const c = document.getElementById('bgcanvas');
-      const ctx = c.getContext('2d');
-      let W=0, H=0, dpr=1, stars=[], kills=0, meteor=null;
-      const bursts = [];
-      const MAX = matchMedia('(max-width:760px)').matches ? 100 : 250;
-      const mouse = {x:-1e4, y:-1e4};
-      const FLEE_R = 90;          // cursor scare radius, css px (scaled by depth)
-      const FLEE_FORCE = 0.1;    // px/frame added at point-blank range
-      const KILL_R = 26;          // click hitbox, css px
-      const FADE = 8;             // trail fade, channel units per frame (1-255)
-      const DRIFT = 0.1;         // drift speed at depth 1, css px/frame
-      const TWINKLE_ODDS = 0.002; // per-star per-frame chance to twinkle
-      const METEOR_ODDS = 0.0015; // per-frame chance of a shooting star
-
-      const resize = () => {
-        const oldW = W, oldH = H;
-        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-        W = c.width = innerWidth * dpr;
-        H = c.height = innerHeight * dpr;
-        c.style.width = innerWidth+'px';
-        c.style.height= innerHeight+'px';
-        // stretch the existing field to the new canvas so a grown window
-        // does not leave stars packed in the old corner
-        if (oldW && oldH){
-          const sx = W/oldW, sy = H/oldH;
-          for (const p of stars){ p.x *= sx; p.y *= sy; }
-          for (const b of bursts){ b.x *= sx; b.y *= sy; }
-          if (meteor){ meteor.x *= sx; meteor.y *= sy; }
-          if (REDUCED) drawFrame();   // resizing cleared the one static frame
-        }
-      };
-      resize();
-      addEventListener('resize', resize);
-
-      const starColor = () => {
-        const r = Math.random();
-        return r<.72 ? '#f3e9d2' : r<.82 ? '#4deaff' : r<.92 ? '#ff2e88' : '#ffe14a';
-      };
-      const spawn = () => {
-        const z = .2 + Math.random()*.8; // depth: 0 far, 1 near
-        return {
-          x: Math.random()*W, y: Math.random()*H,
-          z, fx:0, fy:0, tw:0,
-          s: (1 + (z>.6) + (z>.85))*dpr,
-          c: starColor()
-        };
-      };
-      for (let i=0;i<MAX;i++) stars.push(spawn());
-
-      addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-      document.documentElement.addEventListener('mouseleave', () => { mouse.x = mouse.y = -1e4; });
-
-      const burst = (x,y,col,size) => {
-        for (let i=0;i<8;i++){
-          const a = i/8*Math.PI*2 + Math.random()*.4;
-          const sp = (1 + Math.random()*1.6)*dpr;
-          bursts.push({
-            x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
-            s:Math.max(dpr, size*.6), c:col, l:12 + Math.random()*10
-          });
-        }
-      };
-
-      document.addEventListener('click', e => {
-        if (REDUCED) return;
-        if (e.target.closest('a,button,iframe,.card,.video-card,.gallery-item,.avatar-frame,.lightbox')) return;
-        const mx = e.clientX*dpr, my = e.clientY*dpr;
-        let best = null, bestD = (KILL_R*dpr)**2;
-        for (const p of stars){
-          const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
-          if (d2 < bestD){ bestD = d2; best = p; }
-        }
-        if (!best) return;
-        burst(best.x, best.y, best.c, best.s);
-        Object.assign(best, spawn());
-        kills++;
-        document.getElementById('killcount').textContent = kills;
-        document.querySelectorAll('[data-kill]').forEach(el => el.hidden = false);
-      });
-
-      let running = true;
-      document.addEventListener('visibilitychange', () => {
-        running = !document.hidden;
-        if (running) step();
-      });
-
-      const drawStar = (p) => {
-        ctx.fillStyle = p.c;
-        ctx.globalAlpha = p.tw > 0 ? .95 : .25 + .55*p.z;
-        ctx.fillRect(p.x|0, p.y|0, p.s, p.s);
-      };
-
-      const step = () => {
-        if (!running || REDUCED) return;
-        // trail fade without ghosting: invert, add FADE, invert back =
-        // linear subtract with a hard clamp at 0, so trails fully decay
-        ctx.globalCompositeOperation = 'difference';
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0,0,W,H);
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.fillStyle = `rgb(${FADE},${FADE},${FADE})`;
-        ctx.fillRect(0,0,W,H);
-        ctx.globalCompositeOperation = 'difference';
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0,0,W,H);
-        ctx.globalCompositeOperation = 'source-over';
-
-        const mx = mouse.x*dpr, my = mouse.y*dpr, R = FLEE_R*dpr;
-        for (const p of stars){
-          // slow sideways drift, deeper stars move less
-          p.x += DRIFT*p.z*dpr;
-          const dx = p.x-mx, dy = p.y-my, d2 = dx*dx + dy*dy;
-          if (d2 < R*R && d2 > 1){
-            const d = Math.sqrt(d2), f = (1 - d/R) * FLEE_FORCE * p.z * dpr;
-            p.fx += dx/d*f; p.fy += dy/d*f;
-          }
-          p.fx *= .9; p.fy *= .9;
-          p.x += p.fx; p.y += p.fy;
-          if (p.x < -4) p.x += W+8; else if (p.x > W+4) p.x -= W+8;
-          if (p.y < -4) p.y += H+8; else if (p.y > H+4) p.y -= H+8;
-          if (p.tw > 0) p.tw--;
-          else if (Math.random() < TWINKLE_ODDS) p.tw = 4 + Math.random()*10 | 0;
-          drawStar(p);
-        }
-
-        // rare shooting star; the FADE trick draws its tail for free
-        if (!meteor && Math.random() < METEOR_ODDS){
-          meteor = {
-            x: Math.random()*W, y: -10*dpr,
-            vx: (Math.random()<.5?-1:1)*(3+Math.random()*3)*dpr,
-            vy: (2+Math.random()*2)*dpr,
-            l: 90
-          };
-        }
-        if (meteor){
-          meteor.x += meteor.vx; meteor.y += meteor.vy; meteor.l--;
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = '#f3e9d2';
-          ctx.fillRect(meteor.x|0, meteor.y|0, 2*dpr, 2*dpr);
-          if (meteor.l<=0 || meteor.x<-20 || meteor.x>W+20 || meteor.y>H+20) meteor = null;
-        }
-
-        for (let i=bursts.length-1; i>=0; i--){
-          const b = bursts[i];
-          b.x += b.vx; b.y += b.vy; b.l--;
-          if (b.l <= 0){ bursts.splice(i,1); continue; }
-          ctx.fillStyle = b.c;
-          ctx.globalAlpha = Math.min(1, b.l/12);
-          ctx.fillRect(b.x|0, b.y|0, b.s, b.s);
-        }
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(step);
-      };
-
-      function drawFrame(){
-        ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
-        for (const p of stars) drawStar(p);
-        ctx.globalAlpha = 1;
-      }
-
-      if (REDUCED) drawFrame();
-      else step();
-    })();
-
-    /* ── quantized 3D tilt on card images ──────── */
+    /* ── card images open the project ──────────── */
     document.querySelectorAll('.card img').forEach(img => {
-      const card = img.closest('.card');
-      const link = card?.dataset.link;
+      const link = img.closest('.card')?.dataset.link;
+      if (link)
+        img.addEventListener('click', () => window.open(link, '_blank'));
+    });
 
-      if (!REDUCED){
-        img.addEventListener('mousemove', (e) => {
-          const r = img.getBoundingClientRect();
-          const x = (e.clientX - r.left) / r.width;
-          const y = (e.clientY - r.top)  / r.height;
-          // quantize to 2deg steps
-          const tiltX = Math.round((y - 0.5) * 20 / 2) * 2;
-          const tiltY = Math.round((x - 0.5) * -20 / 2) * 2;
-          img.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.04)`;
-        });
-        img.addEventListener('mouseleave', () => { img.style.transform = ''; });
-      }
-
-      if (link){
-        img.addEventListener('click', () => {
-          window.open(link, '_blank');
-        });
-      }
+    /* ── section heads report what they hold ───── */
+    document.querySelectorAll('.section').forEach(section => {
+      const n = section.querySelector('.shead .n');
+      if (n)
+        n.textContent = String(section.querySelectorAll('.card, .video-card, .gallery-item').length).padStart(2, '0');
     });
 
     /* ── lightbox ──────────────────────────────── */
@@ -906,7 +623,7 @@
       document.getElementById('lightbox-img').alt = img.alt;
       const filename = img.src.split('/').pop();
       const cap = document.getElementById('lightbox-caption');
-      cap.innerHTML = `[ ${currentIndex+1} / ${galleryItems.length} ]  ${filename.toUpperCase()} <span class="hint">[ESC] CLOSE &nbsp; [&larr;/&rarr;] NAV</span>`;
+      cap.innerHTML = `${String(currentIndex+1).padStart(2,'0')} / ${String(galleryItems.length).padStart(2,'0')} &nbsp; ${filename.replace(/\.[a-z]+$/i,'')} <span class="hint">Esc close &nbsp; &larr;/&rarr; browse</span>`;
     }
     function navigateLightbox(d){
       currentIndex = (currentIndex + d + galleryItems.length) % galleryItems.length;
@@ -923,5 +640,7 @@
       if (e.key === 'ArrowRight') navigateLightbox(1);
     });
   </script>
+
+  <script src="background.js"></script>
 </body>
 </html>

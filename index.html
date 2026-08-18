@@ -189,21 +189,22 @@
       background:var(--deep);
       transform:translateY(-3px);
     }
-    /* every image gets the same frame, so rows line up no matter what
-       shape the source screenshot is */
+    /* one 16:9 frame for every card, matching the source screenshots, so rows
+       line up and nothing is cropped — the few off-ratio shots get a mat */
     .card figure{
-      margin:0 0 13px; overflow:hidden; line-height:0;
-      aspect-ratio:16/10;
+      margin:0 0 13px; line-height:0;
+      aspect-ratio:16/9;
+      perspective:900px;
     }
     .card img{
       width:100%; height:100%; display:block;
-      object-fit:cover;
+      object-fit:contain;
+      background:rgba(0,0,0,.28);
       cursor:pointer;
       filter:saturate(.85) contrast(1.02);
-      transform:scale(1.001);
-      transition:transform 600ms var(--ease), filter 400ms var(--ease);
+      transition:transform 160ms var(--ease), filter 400ms var(--ease);
     }
-    .card:hover img{ transform:scale(1.045); filter:none }
+    .card:hover img{ filter:none }
     .card h3, .video-card h3{
       margin:0 0 5px;
       font-size:12.5px; font-weight:500;
@@ -604,9 +605,20 @@
       document.body.classList.add('loaded');
     });
 
-    /* ── card images open the project ──────────── */
+    /* ── card images tilt toward the cursor, click opens the project ── */
     document.querySelectorAll('.card img').forEach(img => {
       const link = img.closest('.card')?.dataset.link;
+
+      if (!REDUCED && matchMedia('(hover:hover)').matches){
+        img.addEventListener('mousemove', (e) => {
+          const r = img.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width  - .5;
+          const y = (e.clientY - r.top)  / r.height - .5;
+          img.style.transform = `rotateX(${y*20}deg) rotateY(${x*-20}deg) scale(1.04)`;
+        });
+        img.addEventListener('mouseleave', () => { img.style.transform = ''; });
+      }
+
       if (link)
         img.addEventListener('click', () => window.open(link, '_blank'));
     });

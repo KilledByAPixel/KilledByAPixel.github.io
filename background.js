@@ -317,6 +317,8 @@ const RES = 2;        // render scale in css pixels; >1 supersamples away the
 const MAX_PIXELS = 8e6; // ceiling: small windows get the full 2x, 4k lands near 1:1
 const FPS = 30;       // background does not need 60
 const SPEED = .12;    // shader time per second
+const BRIGHTNESS = 1; // lifts the shader's own colors; pairs with --veil in the css
+const SATURATION = 1; // 0 is greyscale, >1 pushes the palette harder
 
 const gl = canvas.getContext('webgl2',
     {antialias:false, depth:false, stencil:false, alpha:false, powerPreference:'low-power'});
@@ -421,7 +423,8 @@ const randomize = () =>
 
     // random hue spin and start time so no two loads look alike
     const hue = Math.random()*360|0;
-    canvas.style.filter = `hue-rotate(${hue}deg)`;
+    canvas.style.filter =
+        `hue-rotate(${hue}deg) brightness(${BRIGHTNESS}) saturate(${SATURATION})`;
     time = Math.random()*50;
 
     // report what is actually on screen: which shader, and a seed that
